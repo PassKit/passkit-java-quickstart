@@ -19,7 +19,7 @@ You will need the following:
 
 ### Configuration
 
-1. Download or clone this quickstart repository, then add the following three PassKit credential files to `src/main/resources/credentials`:
+1. Download or clone this quickstart repository, create a folder `src/main/resources/credentials` and add the following three PassKit credential files:
     - certificate.pem
     - ca-chain.pem
     - key-java.pem
