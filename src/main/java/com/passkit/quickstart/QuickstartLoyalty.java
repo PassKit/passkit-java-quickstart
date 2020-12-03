@@ -42,14 +42,13 @@ public class QuickstartLoyalty {
        - Modify default template for VIP tier
        - Create base and VIP tiers
        - Create a loyalty program with base and VIP tiers
-       - Enrol a member
+       - Enrol a member in each tier
        - Check-in a member
        - Check-out a member
        - Add loyalty points to a member
-       - Delete a member
        - Delete all membership assets
 
-       If you would like to retain the assets created, set delete.assets=false in the passkit.properties file.
+       If you would like to retain the assets created, set delete.assets.timeout.seconds=-1 in the passkit.properties file.
      */
 
     // Public objects for testing purposes
