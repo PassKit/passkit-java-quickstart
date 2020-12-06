@@ -104,7 +104,8 @@ public class QuickstartLoyaltyTest {
         // List URLs
         System.out.println("Enrolment URL: " + QuickstartLoyalty.enrolmentUrls.getPageUrl());
         System.out.println("Enrolment QR Code URL: " + QuickstartLoyalty.enrolmentUrls.getQrCodeUrl());
-        System.out.println("VIP Direct Enrolment URL: " + "https://" + QuickstartLoyalty.enrolmentUrls.getPageUrl().split("/")[2] + "/t/" + QuickstartLoyalty.vipShortCode);
+        System.out.println("VIP Direct Enrolment URL: " + QuickstartLoyalty.enrolmentUrls.getTierEnrolmentUrlsMap().get(QuickstartLoyalty.vipTierId.getId()));
+        System.out.println("VIP Direct Enrolment QR Code URL: " + QuickstartLoyalty.enrolmentUrls.getTierEnrolmentQRsMap().get(QuickstartLoyalty.vipTierId.getId()));
         System.out.println("Pass URL: " + "https://" + QuickstartLoyalty.enrolmentUrls.getPageUrl().split("/")[2] + "/" + QuickstartLoyalty.memberId.getId());
         System.out.println("VIP Pass URL: " + "https://" + QuickstartLoyalty.enrolmentUrls.getPageUrl().split("/")[2] + "/" + QuickstartLoyalty.vipMemberId.getId());
 

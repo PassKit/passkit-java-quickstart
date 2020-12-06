@@ -64,7 +64,7 @@ public class QuickstartLoyalty {
     public static MemberEventsOuterClass.MemberEvent checkInEvent;
     public static MemberEventsOuterClass.MemberEvent checkOutEvent;
     public static MemberOuterClass.MemberPoints memberPoints;
-    public static Distribution.DataCollectionPageUrls enrolmentUrls;
+    public static Distribution.EnrolmentUrls enrolmentUrls;
 
     public void quickStart() {
         createImages();
