@@ -82,9 +82,12 @@ public class QuickstartLoyaltyTest {
             MemberEventsOuterClass.MemberEvent event = events.next();
             switch (eventRecord) {
                 case 1:
+                    // ensure nanos for created time match
+                    event = event.toBuilder().setCreated(QuickstartLoyalty.checkInEvent.getCreated()).build();
                     assertEquals("check first listed event matches checked in event", QuickstartLoyalty.checkInEvent, event);
                     break;
                 case 2:
+                    event = event.toBuilder().setCreated(QuickstartLoyalty.checkOutEvent.getCreated()).build();
                     assertEquals("check second listed event matches checked out event", QuickstartLoyalty.checkOutEvent, event);
                     break;
                 case 3:

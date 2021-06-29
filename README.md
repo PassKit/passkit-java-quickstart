@@ -34,9 +34,11 @@ You will need the following:
     
 ### Running the tests
 
-Run `gradle test --tests QuickstartLoyaltyTest`
+Run `gradle test --tests QuickstartLoyaltyTest` or `gradle test --tests QuickstartLEventTicketsTest`
 
 The Loyalty tests will create a membership program with 2 tiers, base and VIP.  It will enrol two members, one in each tier.
+
+The Event Tickets tests will create a venue, production, and event with 2 ticket types and create 2 tickets with the same order number.
 
 The tests will display URLs to the generated passes and to the enrolment page.  It will pause for a period determined in `passkit.properties` for you to check them.
 

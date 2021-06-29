@@ -3,11 +3,8 @@ package com.passkit.quickstart;
 import com.passkit.grpc.*;
 import com.passkit.grpc.Members.*;
 
-import io.grpc.ManagedChannel;
-
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.logging.Logger;
 
 /* Quickstart Loyalty runs through the high level steps required to create a Loyalty program from scratch, enrol a
    member and add some loyalty points using the PassKit gRPC Java SDK. You can skip to enrolling a member if you are
@@ -15,15 +12,18 @@ import java.util.logging.Logger;
  */
 public class QuickstartLoyalty {
 
+    private static GrpcConnection conn;
+
     public QuickstartLoyalty() {
         // initiate client stubs
         try {
-            ManagedChannel channel = new GrpcConnection().getChannel();
-            imagesStub = ImagesGrpc.newBlockingStub(channel);
-            templatesStub = TemplatesGrpc.newBlockingStub(channel);
-            membersStub = MembersGrpc.newBlockingStub(channel);
+            conn = new GrpcConnection();
+            imagesStub = ImagesGrpc.newBlockingStub(conn.getChannel());
+            templatesStub = TemplatesGrpc.newBlockingStub(conn.getChannel());
+            membersStub = MembersGrpc.newBlockingStub(conn.getChannel());
         } catch (Exception e) {
             e.printStackTrace();
+            conn.closeChannel();
             System.exit(1);
         }
     }
@@ -197,9 +197,9 @@ public class QuickstartLoyalty {
                 .setTierId("vip")
                 .setPoints(9999)
                 .setPerson(Personal.Person.newBuilder()
-                        .setDisplayName("Barry Big-boy")
+                        .setDisplayName("Harry Highroller")
                         // set to an email address that can receive mail to receive an enrolment email.
-                        .setEmailAddress("barry.big-boy@dummy.passkit.com")
+                        .setEmailAddress("harry.highroller@dummy.passkit.com")
                         .build())
                 .build();
         vipMemberId = membersStub.enrolMember(member);
@@ -264,5 +264,8 @@ public class QuickstartLoyalty {
         imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(loyaltyImageIds.getAppleLogo()).build());
         imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(loyaltyImageIds.getStrip()).build());
         imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(loyaltyImageIds.getHero()).build());
+
+        // always close the channel when there will be no further calls made.
+        conn.closeChannel();
     }
 }

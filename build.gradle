@@ -9,11 +9,11 @@ repositories {
     mavenCentral()
 }
 
-def passkitSdkVersion = '1.1.2'
+def passkitSdkVersion = '1.1.47'
 // Be careful to match grpc versions with netty.
 // See https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty
-def grpcVersion = '1.34.0'
-def nettyTcNativeVersion = '2.0.31.Final'
+def grpcVersion = '1.38.0'
+def nettyTcNativeVersion = '2.0.34.Final'
 
 test {
     useJUnit()

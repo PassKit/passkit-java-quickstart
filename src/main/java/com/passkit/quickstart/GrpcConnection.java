@@ -79,4 +79,11 @@ public final class GrpcConnection {
         }
         return channel;
     }
+
+    public final void closeChannel() {
+        if (channel == null || channel.isShutdown()) {
+            return;
+        }
+        channel.shutdown();
+    }
 }
