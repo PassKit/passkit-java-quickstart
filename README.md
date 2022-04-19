@@ -16,6 +16,7 @@ You will need the following:
 - Your PassKit SDK Credentials (available from the https://app.passkit.com/app/account/developer-tools)
 - Java JDK 8 or above (11.0.9LTS recommended)
 - Gradle Build Tool (https://gradle.org)
+- Apple wallet certificate id (for flights only)
 
 ### Configuration
 
@@ -30,15 +31,22 @@ You will need the following:
     - set `credentials.password` to the password that you set when requesting your SDK credentials from https://app.passkit.com
     - set other options as required
     
-3. If you wish to receive enrolment emails, edit lines 190 and 203 of the QuickStartLoyalty class to provide an address where you can receive mail.    
+3. If you wish to receive enrolment emails, edit lines 190 and 203 of the QuickStartLoyalty class to provide an address where you can receive mail.   
+
+4. If you are using flights edit `src/main/java/com/passkit/quickstart/QuickstartFlightTickets.java`
+    - set `appleCertificate` on line 52 to your apple certificate id
     
 ### Running the tests
 
-Run `gradle test --tests QuickstartLoyaltyTest` or `gradle test --tests QuickstartLEventTicketsTest`
+Run `gradle test --tests QuickstartLoyaltyTest` or `gradle test --tests QuickstartLEventTicketsTest` or `gradle test --tests QuickstartCouponsTest` or `gradle test --tests QuickstartFlightTicketsTest`
 
 The Loyalty tests will create a membership program with 2 tiers, base and VIP.  It will enrol two members, one in each tier.
 
 The Event Tickets tests will create a venue, production, and event with 2 ticket types and create 2 tickets with the same order number.
+
+The Coupons tests will create a campaign with 2 offers, base and VIP. It will create two coupons, one in each offer. It will then redeem one of the coupons and list the other.
+
+The Flights Tickets tests will create a carrier, flight, an arrival airport, a departure airport, flight designator and boarding pass for one person. 
 
 The tests will display URLs to the generated passes and to the enrolment page.  It will pause for a period determined in `passkit.properties` for you to check them.
 
