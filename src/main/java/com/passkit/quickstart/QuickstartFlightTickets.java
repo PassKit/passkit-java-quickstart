@@ -11,18 +11,19 @@ import com.passkit.grpc.Template;
 import com.passkit.grpc.TemplatesGrpc;
 import com.passkit.grpc.Flights.Airport;
 import com.passkit.grpc.Flights.Airport.AirportCode;
+import com.passkit.grpc.Flights.BoardingPass.BoardingPassesResponse;
 import com.passkit.grpc.Flights.BoardingPass;
 import com.passkit.grpc.Flights.CarrierOuterClass;
 import com.passkit.grpc.Flights.CarrierOuterClass.CarrierCode;
 import com.passkit.grpc.Flights.FlightDesignatorOuterClass;
 import com.passkit.grpc.Flights.FlightDesignatorOuterClass.FlightDesignatorRequest;
 import com.passkit.grpc.Flights.FlightDesignatorOuterClass.FlightSchedule;
+import com.passkit.grpc.Flights.FlightDesignatorOuterClass.FlightTimes;
 import com.passkit.grpc.Flights.FlightOuterClass;
 import com.passkit.grpc.Flights.FlightsGrpc;
 import com.passkit.grpc.Flights.PassengerOuterClass;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 /* Quickstart Flight Tickets runs through the high level steps required to create flight tickets from scratch using the PassKit gRPC Java SDK. 
  */
@@ -54,21 +55,15 @@ public class QuickstartFlightTickets {
         private static ImagesGrpc.ImagesBlockingStub imagesStub;
         private static FlightsGrpc.FlightsBlockingStub flightsStub;
         private static TemplatesGrpc.TemplatesBlockingStub templatesStub;
-        private static String appleCertificate = ""; // Change to your certificate id
+        private static String appleCertificate = "pass.pass.com.jesse.test"; // Change to your certificate id
 
         /*
          * Quickstart will walk through the following steps:
          * - Create image assets
          * - Modify default template for a regular flight ticket
-         * - Modify default template for a vip flight ticket
          * - Create a flight
          * - Create an airport
-         * - Create a basic ticket type
-         * - Create a VIP ticket type
          * - Issue a basic ticket (auto create an event)
-         * - Issue a VIP ticket
-         * - Validate tickets
-         * - Redeem tickets
          * - Delete all ticket assets
          * 
          * If you would like to retain the assets created, set
@@ -77,18 +72,8 @@ public class QuickstartFlightTickets {
 
         // Public objects for testing purposes
         public static Image.ImageIds flightImageIds;
-        public static CommonObjects.Id baseTemplateId;
-        public static CommonObjects.Id vipTemplateId;
-        public static CommonObjects.Id baseTicketTypeId;
-        public static CommonObjects.Id vipTicketTypeId;
-        public static CommonObjects.Id baseTicket;
-        public static CommonObjects.Id vipTicket;
-        public static CommonObjects.Id basePass;
-        public static CommonObjects.PassBundle vipPass;
-        public static CommonObjects.Id baseTicketRedeemedId;
-        public static CommonObjects.Id vipTicketRedeemedId;
-        public static long eventTimeUnix;
-        public static CarrierCode carrierCode;
+        public static CommonObjects.Id templateId;
+        public static BoardingPassesResponse pass;
 
         public void quickStart() {
                 createImages();
@@ -161,46 +146,19 @@ public class QuickstartFlightTickets {
                                 .setTimezone("Europe/London")
                                 .build();
 
-                baseTemplateId = templatesStub.createTemplate(defaultTemplate);
+                templateId = templatesStub.createTemplate(defaultTemplate);
+        }
 
-                ArrayList<Template.DataField> dataFields = new ArrayList<>(
-                                defaultTemplate.getData().getDataFieldsList());
-                Template.DataField firstField = dataFields.get(0);
-                firstField = firstField.toBuilder()
-                                .setAppleWalletFieldRenderOptions(firstField.getAppleWalletFieldRenderOptions()
-                                                .toBuilder()
-                                                .setPositionSettings(Template.PositionSettings.newBuilder()
-                                                                .setSection(Template.FieldSection.PRIMARY_FIELDS)
-                                                                .build()))
+        private void createCarrier() {
+                // Creates carrier
+                System.out.println("creating carrier");
+                // Modify carrier
+                CarrierOuterClass.Carrier carrier = CarrierOuterClass.Carrier.newBuilder()
+                                .setAirlineName("ABC Airline ")
+                                .setIataCarrierCode("YY")
+                                .setPassTypeIdentifier(appleCertificate)
                                 .build();
-                dataFields.set(0, firstField);
-
-                // Modify the default template for the VIP tier
-                defaultTemplate = defaultTemplate.toBuilder()
-                                .setName("ABC VIP Flight Ticket")
-                                .setDescription("ABC - VIP section Ticket")
-                                .setImageIds(Image.ImageIds.newBuilder()
-                                                .setIcon(flightImageIds.getIcon())
-                                                .setLogo(flightImageIds.getLogo())
-                                                .setAppleLogo(flightImageIds.getAppleLogo())
-                                                .setHero(flightImageIds.getHero())
-                                                .setThumbnail(flightImageIds.getThumbnail())
-                                                .setBackground(flightImageIds.getBackground())
-                                                .clearEventStrip()
-                                                .build())
-                                .setColors(Template.Colors.newBuilder()
-                                                .setTextColor("FFFFFF")
-                                                .setLabelColor("FFEA6C")
-                                                .setBackgroundColor("000000")
-                                                .clearStripColor()
-                                                .build())
-                                .setTimezone("Asia/Bangkok")
-                                .setData(Template.Data.newBuilder()
-                                                .addAllDataFields(dataFields)
-                                                .build())
-                                .build();
-
-                vipTemplateId = templatesStub.createTemplate(defaultTemplate);
+                flightsStub.createCarrier(carrier);
         }
 
         private void createAirport() {
@@ -215,7 +173,6 @@ public class QuickstartFlightTickets {
                                 .setCountryCode("IE")
                                 .setTimezone("Europe/London")
                                 .build();
-                System.out.println(departureAirport);
 
                 System.out.println("creating arrival airport");
                 // Modify arrival airport
@@ -227,23 +184,32 @@ public class QuickstartFlightTickets {
                                 .setCountryCode("HK")
                                 .setTimezone("Asia/Hong_Kong")
                                 .build();
-                System.out.println(arrivalAirport);
 
                 flightsStub.createPort(departureAirport);
                 flightsStub.createPort(arrivalAirport);
         }
 
-        private void createCarrier() {
-                // Creates carrier
-                System.out.println("creating Carrier");
-                // Modify carrier
-                CarrierOuterClass.Carrier carrier = CarrierOuterClass.Carrier.newBuilder()
-                                .setAirlineName("ABC Airline ")
-                                .setIataCarrierCode("YY")
-                                .setPassTypeIdentifier(appleCertificate)
+        private void createFlight() {
+                // Creates flight
+                System.out.println("creating flight");
+                // Modify flight details below
+                LocalDateTime flightDateTime = LocalDateTime.newBuilder()
+                                .setDateTime("2022-04-25T13:00:00")
                                 .build();
-                System.out.println(carrier);
-                flightsStub.createCarrier(carrier);
+                FlightOuterClass.Flight flight = FlightOuterClass.Flight.newBuilder()
+                                .setCarrierCode("YY")
+                                .setFlightNumber("YY123")
+                                .setBoardingPoint("YY4")
+                                .setDeplaningPoint("ADP")
+                                .setDepartureDate(CommonObjects.Date.newBuilder()
+                                                .setDay(25)
+                                                .setMonth(4)
+                                                .setYear(2022)
+                                                .build())
+                                .setScheduledDepartureTime(flightDateTime)
+                                .setPassTemplateId(templateId.getId())
+                                .build();
+                flightsStub.createFlight(flight);
         }
 
         private void createFlightDesignator() {
@@ -255,105 +221,81 @@ public class QuickstartFlightTickets {
                                 .setFlightNumber("YY123")
                                 .setRevision(2)
                                 .setSchedule(FlightSchedule.newBuilder()
-                                                .setMonday(FlightSchedule.newBuilder().getMondayBuilder()
+                                                .setMonday(FlightTimes.newBuilder()
                                                                 .setScheduledDepartureTime(Time.newBuilder().setHour(13)
                                                                                 .setMinute(00).setSecond(0).build())
+                                                                .setBoardingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(15).setSecond(0).build())
                                                                 .setGateClosingTime(Time.newBuilder().setHour(12)
                                                                                 .setMinute(30).setSecond(0).build())
                                                                 .setScheduledArrivalTime(Time.newBuilder().setHour(14)
-                                                                                .setMinute(00).setSecond(0))
+                                                                                .setMinute(00).setSecond(0)))
+
+                                                .setTuesday(FlightTimes.newBuilder()
+                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(13)
+                                                                                .setMinute(00).setSecond(0).build())
                                                                 .setBoardingTime(Time.newBuilder().setHour(12)
-                                                                                .setMinute(15).setSecond(0).build()))
+                                                                                .setMinute(15).setSecond(0).build())
+                                                                .setGateClosingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(30).setSecond(0).build())
+                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(14)
+                                                                                .setMinute(00).setSecond(0)))
 
-                                                .setTuesday(FlightSchedule.newBuilder().getTuesdayBuilder()
-                                                                .setBoardingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setGateClosingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(00).setSecond(0))
-                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build()))
+                                                .setWednesday(FlightTimes.newBuilder()
+                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(13)
+                                                                                .setMinute(00).setSecond(0).build())
+                                                                .setBoardingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(15).setSecond(0).build())
+                                                                .setGateClosingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(30).setSecond(0).build())
+                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(14)
+                                                                                .setMinute(00).setSecond(0)))
 
-                                                .setWednesday(FlightSchedule.newBuilder().getWednesdayBuilder()
-                                                                .setBoardingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setGateClosingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(00).setSecond(0))
-                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build()))
+                                                .setThursday(FlightTimes.newBuilder()
+                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(13)
+                                                                                .setMinute(00).setSecond(0).build())
+                                                                .setBoardingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(15).setSecond(0).build())
+                                                                .setGateClosingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(30).setSecond(0).build())
+                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(14)
+                                                                                .setMinute(00).setSecond(0)))
 
-                                                .setThursday(FlightSchedule.newBuilder().getThursdayBuilder()
-                                                                .setBoardingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setGateClosingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(00).setSecond(0))
-                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build()))
+                                                .setFriday(FlightTimes.newBuilder()
+                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(13)
+                                                                                .setMinute(00).setSecond(0).build())
+                                                                .setBoardingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(15).setSecond(0).build())
+                                                                .setGateClosingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(30).setSecond(0).build())
+                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(14)
+                                                                                .setMinute(00).setSecond(0)))
 
-                                                .setFriday(FlightSchedule.newBuilder().getFridayBuilder()
-                                                                .setBoardingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setGateClosingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(00).setSecond(0))
-                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build()))
+                                                .setSaturday(FlightTimes.newBuilder()
+                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(13)
+                                                                                .setMinute(00).setSecond(0).build())
+                                                                .setBoardingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(15).setSecond(0).build())
+                                                                .setGateClosingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(30).setSecond(0).build())
+                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(14)
+                                                                                .setMinute(00).setSecond(0)))
 
-                                                .setSaturday(FlightSchedule.newBuilder().getSaturdayBuilder()
-                                                                .setBoardingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setGateClosingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(00).setSecond(0))
-                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build()))
-
-                                                .setSunday(FlightSchedule.newBuilder().getSundayBuilder()
-                                                                .setBoardingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setGateClosingTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build())
-                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(00).setSecond(0))
-                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(0)
-                                                                                .setMinute(0).setSecond(0).build()))
+                                                .setSunday(FlightTimes.newBuilder()
+                                                                .setScheduledDepartureTime(Time.newBuilder().setHour(13)
+                                                                                .setMinute(00).setSecond(0).build())
+                                                                .setBoardingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(15).setSecond(0).build())
+                                                                .setGateClosingTime(Time.newBuilder().setHour(12)
+                                                                                .setMinute(30).setSecond(0).build())
+                                                                .setScheduledArrivalTime(Time.newBuilder().setHour(14)
+                                                                                .setMinute(00).setSecond(0)))
                                                 .build())
-                                .setOrigin("Dublin")
-                                .setDestination("London")
-                                .setPassTemplateId(baseTemplateId.getId())
+                                .setOrigin("YY4")
+                                .setDestination("ADP")
+                                .setPassTemplateId(templateId.getId())
                                 .build();
                 flightsStub.createFlightDesignator(flightDesignator);
-        }
-
-        private void createFlight() {
-                // Creates flight
-                System.out.println("creating Flight");
-                // Modify flight details below
-                LocalDateTime flightDateTime = LocalDateTime.newBuilder()
-                                .setDateTime("2022-02-28T18:00:00")
-                                .build();
-                FlightOuterClass.Flight flight = FlightOuterClass.Flight.newBuilder()
-                                .setCarrierCode("YY")
-                                .setFlightNumber("YY123")
-                                .setBoardingPoint("YY4")
-                                .setDeplaningPoint("ADP")
-                                .setDepartureDate(CommonObjects.Date.newBuilder()
-                                                .setDay(28)
-                                                .setMonth(2)
-                                                .setYear(2022)
-                                                .build())
-                                .setScheduledDepartureTime(flightDateTime)
-                                .setPassTemplateId(baseTemplateId.getId())
-                                .build();
-                System.out.println(flight);
-                flightsStub.createFlight(flight);
         }
 
         private void createBoardingPass() {
@@ -366,8 +308,8 @@ public class QuickstartFlightTickets {
                                 .setCarrierCode("YY")
                                 .setFlightNumber("YY123")
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
-                                                .setDay(28)
-                                                .setMonth(2)
+                                                .setDay(25)
+                                                .setMonth(4)
                                                 .setYear(2022)
                                                 .build())
                                 .setPassenger(PassengerOuterClass.Passenger.newBuilder()
@@ -378,9 +320,7 @@ public class QuickstartFlightTickets {
                                                 .build())
                                 .setSequenceNumber(123)
                                 .build();
-                System.out.println(boardingPassRecord.getId());
-                flightsStub.createBoardingPass(boardingPassRecord);
-
+                pass = flightsStub.createBoardingPass(boardingPassRecord);
         }
 
         public static void cleanup() {
@@ -389,9 +329,11 @@ public class QuickstartFlightTickets {
                                 .setFlightNumber("YY123")
                                 .setBoardingPoint("YY4")
                                 .setDeplaningPoint("ADP")
-                                .build());
-                flightsStub.deleteCarrier(CarrierCode.newBuilder()
-                                .setCarrierCode("YY")
+                                .setDepartureDate(CommonObjects.Date.newBuilder()
+                                                .setDay(25)
+                                                .setMonth(4)
+                                                .setYear(2022)
+                                                .build())
                                 .build());
                 flightsStub.deleteFlightDesignator(FlightDesignatorRequest.newBuilder()
                                 .setCarrierCode("YY")
@@ -403,8 +345,10 @@ public class QuickstartFlightTickets {
                 flightsStub.deletePort(AirportCode.newBuilder()
                                 .setAirportCode("ADP")
                                 .build());
-                templatesStub.deleteTemplate(baseTemplateId);
-                templatesStub.deleteTemplate(vipTemplateId);
+                flightsStub.deleteCarrier(CarrierCode.newBuilder()
+                                .setCarrierCode("YY")
+                                .build());
+                templatesStub.deleteTemplate(templateId);
                 imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getIcon()).build());
                 imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getLogo()).build());
                 imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getAppleLogo()).build());

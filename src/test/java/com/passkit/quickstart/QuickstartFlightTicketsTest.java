@@ -33,17 +33,16 @@ public class QuickstartFlightTicketsTest {
                                 QuickstartFlightTickets.flightImageIds.getStrip());
 
                 // Test templates have been created
-                assertNotNull("expect baseTemplateId not to be null", QuickstartFlightTickets.baseTemplateId);
-                assertNotNull("expect vipTemplateId not to be null", QuickstartFlightTickets.vipTemplateId);
+                assertNotNull("expect templateId not to be null", QuickstartFlightTickets.templateId);
                 assertEquals("length of template id should be 22 characters", 22,
-                                QuickstartFlightTickets.baseTemplateId.getId().length());
-                assertEquals("length of template id should be 22 characters", 22,
-                                QuickstartFlightTickets.vipTemplateId.getId().length());
+                                QuickstartFlightTickets.templateId.getId().length());
+
+                // Test ticket has been created
+                assertNotNull("expect base ticket not to be null", QuickstartFlightTickets.pass);
 
                 // List URLs
-                // System.out.println("Base Pass URL: " +
-                // QuickstartEventTickets.basePass.getUrl());
-                // System.out.println(
+                System.out.println(
+                                "URLS: " + QuickstartFlightTickets.pass);
 
                 try {
                         Properties properties = new Properties();
