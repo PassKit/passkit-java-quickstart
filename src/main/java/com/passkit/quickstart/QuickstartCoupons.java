@@ -4,6 +4,7 @@ import com.passkit.grpc.*;
 import com.passkit.grpc.SingleUseCoupons.*;
 import com.passkit.grpc.SingleUseCoupons.Campaign;
 import com.passkit.grpc.SingleUseCoupons.CouponOuterClass.CouponStatus;
+
 import com.google.protobuf.Timestamp;
 
 import java.io.IOException;
@@ -49,6 +50,10 @@ public class QuickstartCoupons {
          * - Redeem a coupon
          * - Delete an offer
          * 
+         * Each method has the minimum information needed to execute the method, if
+         * you would like to add more details please refer to
+         * hhttps://docs.passkit.io/protocols/coupon/
+         * for fields that can be added.
          * If you would like to retain the assets created, set
          * delete.assets.timeout.seconds=-1 in the passkit.properties file.
          */
@@ -62,6 +67,8 @@ public class QuickstartCoupons {
         public static CommonObjects.Id vipOfferId;
         public static CommonObjects.Id baseCouponId;
         public static CommonObjects.Id vipCouponId;
+        public static String baseEmail = "loyal.larry@dummy.passkit.com"; // Change to your email to receive cards
+        public static String vipEmail = "harry.highroller@dummy.passkit.com"; // Change to your email to receive cards
 
         public void quickStart() {
                 createImages();
@@ -191,7 +198,7 @@ public class QuickstartCoupons {
                                                 .setDisplayName("Loyal Larry")
                                                 // set to an email address that can receive mail to receive an enrolment
                                                 // email.
-                                                .setEmailAddress("loyal.larry@dummy.passkit.com")
+                                                .setEmailAddress(baseEmail)
                                                 .build())
                                 .setStatus(CouponStatus.UNREDEEMED)
                                 .build();
@@ -202,7 +209,7 @@ public class QuickstartCoupons {
                                                 .setDisplayName("Harry Highroller")
                                                 // set to an email address that can receive mail to receive an enrolment
                                                 // email.
-                                                .setEmailAddress("harry.highroller@dummy.passkit.com")
+                                                .setEmailAddress(vipEmail)
                                                 .build())
                                 .build();
                 vipCouponId = couponsStub.createCoupon(coupon);

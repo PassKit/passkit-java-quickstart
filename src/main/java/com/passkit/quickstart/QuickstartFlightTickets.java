@@ -55,7 +55,7 @@ public class QuickstartFlightTickets {
         private static ImagesGrpc.ImagesBlockingStub imagesStub;
         private static FlightsGrpc.FlightsBlockingStub flightsStub;
         private static TemplatesGrpc.TemplatesBlockingStub templatesStub;
-        private static String appleCertificate = "pass.pass.com.jesse.test"; // Change to your certificate id
+        private static String appleCertificate = ""; // Replace with your apple certificate id
 
         /*
          * Quickstart will walk through the following steps:
@@ -66,6 +66,10 @@ public class QuickstartFlightTickets {
          * - Issue a basic ticket (auto create an event)
          * - Delete all ticket assets
          * 
+         * Each method has the minimum information needed to execute the method, if you
+         * would like to add more details please refer to
+         * https://docs.passkit.io/protocols/boarding/
+         * for fields that can be added.
          * If you would like to retain the assets created, set
          * delete.assets.timeout.seconds=-1 in the passkit.properties file.
          */
