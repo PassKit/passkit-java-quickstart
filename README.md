@@ -15,10 +15,9 @@ You will need the following:
 - A PassKit account (signup for free at https://app.passkit.com)
 - Your PassKit SDK Credentials (available from the https://app.passkit.com/app/account/developer-tools)
 - Java JDK 8 or above (11.0.9LTS recommended) from https://www.oracle.com/java/technologies/downloads/ (https://docs.oracle.com/en/java/javase/18/install/overview-jdk-installation.html - guide on how to download)
-- Gradle Build Tool from https://gradle.org/install/ 
-- Apple wallet certificate id (for flights only, found under certificates in your passkit account)
- ![ScreenShot](src/main/resources/images/readme/certificate-1.png)
- ![ScreenShot](src/main/resources/images/readme/certificate-2.png)
+- Gradle Build Tool from https://gradle.org/install/ with guide on how to install
+- Apple wallet certificate id (for flights only, https://app.passkit.com/app/account/certificates)
+ ![ScreenShot](src/main/resources/images/readme/certificate.png)
 
 ### Configuration
 
@@ -63,7 +62,7 @@ The tests will then delete and clean-up all assets that it created.
 An example of what this would look like in the terminal is shown below:
 
  ![ScreenShot](src/main/resources/images/readme/loyalty-test.png)
- 
+
 ## Documentation
 * [PassKit Membership Official Documentation](https://docs.passkit.io/protocols/member)
 * [PassKit Coupons Official Documentation](https://docs.passkit.io/protocols/coupon)
