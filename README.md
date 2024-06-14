@@ -30,7 +30,8 @@ You will need the following:
 
 2. Edit `passkit.properties` in the resources folder 
     - set `credentials.password` to the password that you set when requesting your SDK credentials from https://app.passkit.com
-    - if you are using flights edit `credentials.appleCertificate` with your id 
+    - if you are using flights edit `credentials.appleCertificate` with your id
+    - check the API region of your account [here](https://app.passkit.com/app/account/developer-tools) and change it accordingly, for Europe/Pub1 use `grpc.host = "grpc.pub1.passkit.io"` and for USA/Pub2 use `grpc.host = "grpc.pub2.passkit.io"`.
     - set other options as required
     ![ScreenShot](src/main/resources/images/readme/properties.png)
 
