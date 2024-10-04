@@ -2,6 +2,8 @@ package com.passkit.quickstart;
 
 import com.passkit.grpc.*;
 import com.passkit.grpc.Members.*;
+import com.passkit.grpc.Members.MemberOuterClass.Member;
+import com.passkit.grpc.Members.MemberOuterClass.MemberRecordByExternalIdRequest;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -12,7 +14,32 @@ import java.util.Iterator;
  */
 public class QuickstartLoyalty {
 
+        // Regular connection
         private static GrpcConnection conn;
+
+        // Connection for pooling
+        /**
+         * private static GrpcConnectionPool connectionPool;
+         * 
+         * // Quickstart set up for pool connections
+         * public QuickstartLoyalty(int poolSize) {
+         * try {
+         * // Initialize the gRPC connection pool with the specified pool size
+         * connectionPool = new GrpcConnectionPool(poolSize);
+         * 
+         * // Initialize stubs using channels from the pool
+         * imagesStub = ImagesGrpc.newBlockingStub(connectionPool.getChannel());
+         * templatesStub = TemplatesGrpc.newBlockingStub(connectionPool.getChannel());
+         * membersStub = MembersGrpc.newBlockingStub(connectionPool.getChannel());
+         * distributionStub =
+         * DistributionGrpc.newBlockingStub(connectionPool.getChannel());
+         * } catch (IOException e) {
+         * e.printStackTrace();
+         * shutdownPool();
+         * System.exit(1);
+         * }
+         * }
+         **/
 
         public QuickstartLoyalty() {
                 // initiate client stubs
@@ -20,6 +47,7 @@ public class QuickstartLoyalty {
                         conn = new GrpcConnection();
                         imagesStub = ImagesGrpc.newBlockingStub(conn.getChannel());
                         templatesStub = TemplatesGrpc.newBlockingStub(conn.getChannel());
+                        distributionStub = DistributionGrpc.newBlockingStub(conn.getChannel());
                         membersStub = MembersGrpc.newBlockingStub(conn.getChannel());
                 } catch (Exception e) {
                         e.printStackTrace();
@@ -38,6 +66,7 @@ public class QuickstartLoyalty {
         private static ImagesGrpc.ImagesBlockingStub imagesStub;
         private static MembersGrpc.MembersBlockingStub membersStub;
         private static TemplatesGrpc.TemplatesBlockingStub templatesStub;
+        private static DistributionGrpc.DistributionBlockingStub distributionStub;
 
         /*
          * Quickstart will walk through the following steps:
@@ -74,8 +103,10 @@ public class QuickstartLoyalty {
         public static MemberEventsOuterClass.MemberEvent checkOutEvent;
         public static MemberOuterClass.MemberPoints memberPoints;
         public static Distribution.EnrolmentUrls enrolmentUrls;
+        public static CommonObjects.Url smartPassUrl;
         public static String baseEmail = "loyal.larry@dummy.passkit.com"; // Change to your email to receive cards
         public static String vipEmail = "harry.highroller@dummy.passkit.com"; // Change to your email to receive cards
+        public static Member externalId;
 
         public void quickStart() {
                 createImages();
@@ -87,6 +118,9 @@ public class QuickstartLoyalty {
                 checkOutMember();
                 addPoints(100);
                 getDistribution();
+                getMemberByExternalId();
+                listMemberEvents();
+                getSmartPassLink();
         }
 
         private void createImages() {
@@ -173,7 +207,7 @@ public class QuickstartLoyalty {
 
                 tier = tier.toBuilder()
                                 .setId("vip")
-                                .setName("Quickstart VIP Tier")
+                                .setName(" VIP Tier")
                                 .setTierIndex(10)
                                 .setPassTemplateId(vipTemplateId.getId())
                                 // Set allow tier enrolment will allow direct enrolment to the tier via a public
@@ -195,10 +229,12 @@ public class QuickstartLoyalty {
                 MemberOuterClass.Member member = MemberOuterClass.Member.newBuilder()
                                 .setTierId("base")
                                 .setProgramId(programId.getId())
+                                .setExternalId("12345")
                                 .setPerson(Personal.Person.newBuilder()
                                                 .setDisplayName("Loyal Larry")
                                                 // set to an email address that can receive mail to receive an enrolment
                                                 // email.
+
                                                 .setEmailAddress(baseEmail)
                                                 .build())
                                 .setPoints(88)
@@ -208,6 +244,7 @@ public class QuickstartLoyalty {
                 member = member.toBuilder()
                                 .setTierId("vip")
                                 .setPoints(9999)
+                                .setExternalId("123456")
                                 .setPerson(Personal.Person.newBuilder()
                                                 .setDisplayName("Harry Highroller")
                                                 // set to an email address that can receive mail to receive an enrolment
@@ -252,6 +289,8 @@ public class QuickstartLoyalty {
                 MemberOuterClass.EarnBurnPointsRequest request = MemberOuterClass.EarnBurnPointsRequest.newBuilder()
                                 .setId(memberId.getId())
                                 .setPoints(points)
+                                .setTierPoints(0)
+                                .setSecondaryPoints(points)
                                 .build();
 
                 memberPoints = membersStub.earnPoints(request);
@@ -262,6 +301,31 @@ public class QuickstartLoyalty {
                                 .setProgramId(programId.getId())
                                 .build();
                 return membersStub.listMemberEvents(request);
+        }
+
+        private void getMemberByExternalId() {
+                MemberRecordByExternalIdRequest request = MemberRecordByExternalIdRequest.newBuilder()
+                                .setExternalId("12345")
+                                .setProgramId(programId.getId())
+                                .build();
+
+                externalId = membersStub.getMemberRecordByExternalId(request);
+        }
+
+        private void getSmartPassLink() {
+                CommonObjects.Url projectDistributionUrl = CommonObjects.Url.newBuilder()
+                                .setUrl("https://pub1.pskt.io/c/6mkens") // This is the PassKit Url found in the
+                                                                         // settings section of the project under smart
+                                                                         // pass links and then the tab command line
+                                                                         // tools
+                                .build();
+                Distribution.SmartPassLinkRequest smartPassLink = Distribution.SmartPassLinkRequest.newBuilder()
+                                .setProjectDistributionUrl(projectDistributionUrl)
+                                .putFields("person.surname", "Anderson") // More possible fields can be found here:
+                                                                         // https://github.com/PassKit/smart-pass-link-from-csv-generator#available-field-names
+                                .putFields("person.emailAddress", baseEmail)
+                                .build();
+                smartPassUrl = distributionStub.getSmartPassLink(smartPassLink);
         }
 
         private void getDistribution() {
@@ -280,5 +344,17 @@ public class QuickstartLoyalty {
 
                 // always close the channel when there will be no further calls made.
                 conn.closeChannel();
+
+                // Shutdown if you are using the connection pool
+                // shutdownPool();
         }
+
+        // Method to shut down the pool
+        /**
+         * private static void shutdownPool() {
+         * if (connectionPool != null) {
+         * connectionPool.shutdown();
+         * }
+         * }
+         **/
 }

@@ -2,7 +2,6 @@ package com.passkit.quickstart;
 
 import com.passkit.grpc.*;
 import com.passkit.grpc.SingleUseCoupons.*;
-import com.passkit.grpc.SingleUseCoupons.Campaign;
 import com.passkit.grpc.SingleUseCoupons.CouponOuterClass.CouponStatus;
 
 import com.google.protobuf.Timestamp;
@@ -14,6 +13,29 @@ import java.io.IOException;
 public class QuickstartCoupons {
 
         private static GrpcConnection conn;
+
+        // Connection for pooling
+        /**
+         * private static GrpcConnectionPool connectionPool;
+         * 
+         * // Quickstart set up for pool connections
+         * public QuickstartCoupons(int poolSize) {
+         * try {
+         * // Initialize the gRPC connection pool with the specified pool size
+         * connectionPool = new GrpcConnectionPool(poolSize);
+         * 
+         * // Initialize stubs using channels from the pool
+         * imagesStub = ImagesGrpc.newBlockingStub(connectionPool.getChannel());
+         * templatesStub = TemplatesGrpc.newBlockingStub(connectionPool.getChannel());
+         * couponsStub =
+         * SingleUseCouponsGrpc.newBlockingStub(connectionPool.getChannel());
+         * } catch (IOException e) {
+         * e.printStackTrace();
+         * shutdownPool();
+         * System.exit(1);
+         * }
+         * }
+         **/
 
         public QuickstartCoupons() {
                 // initiate client stubs
@@ -254,5 +276,17 @@ public class QuickstartCoupons {
 
                 // always close the channel when there will be no further calls made.
                 conn.closeChannel();
+
+                // Shutdown if you are using the connection pool
+                // shutdownPool();
         }
+
+        // Method to shut down the pool
+        /**
+         * private static void shutdownPool() {
+         * if (connectionPool != null) {
+         * connectionPool.shutdown();
+         * }
+         * }
+         **/
 }

@@ -10,6 +10,7 @@ public class QuickstartFlightTicketsTest {
 
         @Test
         public void quickstartFlightTicketsTest() {
+                // Include pool size if using connection pooling e.g. 5
                 QuickstartFlightTickets qs = new QuickstartFlightTickets();
                 qs.quickStart();
 

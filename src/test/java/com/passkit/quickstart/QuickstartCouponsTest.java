@@ -10,6 +10,7 @@ public class QuickstartCouponsTest {
 
         @Test
         public void quickstartCouponsTest() {
+                // Include pool size if using connection pooling e.g. 5
                 QuickstartCoupons qs = new QuickstartCoupons();
                 qs.quickStart();
 

@@ -31,6 +31,28 @@ public class QuickstartFlightTickets {
 
         private static GrpcConnection conn;
 
+        // Connection for pooling
+        /**
+         * private static GrpcConnectionPool connectionPool;
+         * 
+         * // Quickstart set up for pool connections
+         * public QuickstartFlightTickets(int poolSize) {
+         * try {
+         * // Initialize the gRPC connection pool with the specified pool size
+         * connectionPool = new GrpcConnectionPool(poolSize);
+         * 
+         * // Initialize stubs using channels from the pool
+         * imagesStub = ImagesGrpc.newBlockingStub(connectionPool.getChannel());
+         * templatesStub = TemplatesGrpc.newBlockingStub(connectionPool.getChannel());
+         * flightsStub = FlightsGrpc.newBlockingStub(connectionPool.getChannel());
+         * } catch (IOException e) {
+         * e.printStackTrace();
+         * shutdownPool();
+         * System.exit(1);
+         * }
+         * }
+         **/
+
         public QuickstartFlightTickets() {
                 // initiate client stubs
                 try {
@@ -363,5 +385,18 @@ public class QuickstartFlightTickets {
 
                 // always close the channel when there will be no further calls made.
                 conn.closeChannel();
+
+                // Shutdown if you are using the connection pool
+                // shutdownPool();
         }
+
+        // Method to shut down the pool
+        /**
+         * private static void shutdownPool() {
+         * if (connectionPool != null) {
+         * connectionPool.shutdown();
+         * }
+         * }
+         **/
+
 }

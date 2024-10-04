@@ -42,8 +42,15 @@ You will need the following:
 
 4. If you are using flights edit `appleCertificate` on line 59 
     ![ScreenShot](src/main/resources/images/readme/apple-certificate.png)
-    
 
+5. If you will be sending large amounts of data we reccomend using connection pooling. To use connection pooling follow these steps to uncomment the relevant sections in the code:
+    - Enable Connection Pooling Declaration: Locate the section where the connection pool is declared, it should be in the top section above the stub declaration, and ensure the connection pool is enabled. You can do this by removing any comment markers or enabling the appropriate code for the pool.
+    - Activate the Pool-Based Constructor: Switch to the constructor that initializes the connection pool by removing any comment markers or enabling the constructor code. This constructor will initialize the connection pool with a specified size and use the pool for creating gRPC stubs.
+    - Disable the Single Connection Constructor: The single connection constructor, which creates only one gRPC connection, should be disabled or commented out. This ensures that the connection pool will be used instead of creating a new connection for each request.
+    - Ensure Pool Shutdown Handling: Make sure the method responsible for shutting down the connection pool is enabled. This method should be invoked when the connection pool is no longer needed to ensure all gRPC channels are closed properly.
+    - Update Cleanup Logic: Modify the cleanup logic to use the pool shutdown method. Instead of closing individual gRPC channels, the cleanup process should handle shutting down the entire connection pool once all operations are complete.
+    - Add a pool size in the relevant Test file
+    
 
     
 ### Running the tests
@@ -75,5 +82,6 @@ An example of what this would look like in the terminal is shown below:
 For implementing in your own projects, use the GrpcConnection class to manage connection to the PassKit gRPC endpoints.
 
 Use the GrpcConnection's ManagedChannel object to create the stubs you require in your implementation. 
+
 
 

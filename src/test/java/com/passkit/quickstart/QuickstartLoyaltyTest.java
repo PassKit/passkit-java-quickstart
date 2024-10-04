@@ -13,23 +13,27 @@ public class QuickstartLoyaltyTest {
 
     @Test
     public void quickstartLoyaltyTest() {
+        // Include pool size if using connection pooling e.g. 5
         QuickstartLoyalty qs = new QuickstartLoyalty();
         qs.quickStart();
 
         // Test image assets
         assertNotEquals("expect icon image id not to be empty", "", QuickstartLoyalty.loyaltyImageIds.getIcon());
-        assertNotEquals("expect logo image id not to be empty","", QuickstartLoyalty.loyaltyImageIds.getLogo());
-        assertNotEquals("expect appleLogo image id not to be empty","", QuickstartLoyalty.loyaltyImageIds.getAppleLogo());
-        assertNotEquals("expect strip image id not to be empty","", QuickstartLoyalty.loyaltyImageIds.getStrip());
-        assertNotEquals("expect hero image id not to be empty","", QuickstartLoyalty.loyaltyImageIds.getHero());
+        assertNotEquals("expect logo image id not to be empty", "", QuickstartLoyalty.loyaltyImageIds.getLogo());
+        assertNotEquals("expect appleLogo image id not to be empty", "",
+                QuickstartLoyalty.loyaltyImageIds.getAppleLogo());
+        assertNotEquals("expect strip image id not to be empty", "", QuickstartLoyalty.loyaltyImageIds.getStrip());
+        assertNotEquals("expect hero image id not to be empty", "", QuickstartLoyalty.loyaltyImageIds.getHero());
         // Expect all other image ids to be empty
-        assertEquals("expect security image id to be empty","", QuickstartLoyalty.loyaltyImageIds.getThumbnail());
+        assertEquals("expect security image id to be empty", "", QuickstartLoyalty.loyaltyImageIds.getThumbnail());
 
         // Test templates have been created
         assertNotNull("expect baseTemplateId not to be null", QuickstartLoyalty.baseTemplateId);
         assertNotNull("expect vipTemplateId not to be null", QuickstartLoyalty.vipTemplateId);
-        assertEquals("length of template id should be 22 characters", 22, QuickstartLoyalty.baseTemplateId.getId().length());
-        assertEquals("length of template id should be 22 characters", 22, QuickstartLoyalty.vipTemplateId.getId().length());
+        assertEquals("length of template id should be 22 characters", 22,
+                QuickstartLoyalty.baseTemplateId.getId().length());
+        assertEquals("length of template id should be 22 characters", 22,
+                QuickstartLoyalty.vipTemplateId.getId().length());
 
         // Test program has been created
         assertNotNull("expect programId not to be null", QuickstartLoyalty.programId);
@@ -47,11 +51,14 @@ public class QuickstartLoyaltyTest {
 
         // Test checkin event has been created
         assertNotNull("expect checkInEvent not to be null", QuickstartLoyalty.checkInEvent);
-        assertEquals("length of checkInEvent id should be 22 characters", 22, QuickstartLoyalty.checkInEvent.getId().length());
-        assertEquals("check checkout event member id equals member id", QuickstartLoyalty.memberId.getId(), QuickstartLoyalty.checkInEvent.getMember().getId());
+        assertEquals("length of checkInEvent id should be 22 characters", 22,
+                QuickstartLoyalty.checkInEvent.getId().length());
+        assertEquals("check checkout event member id equals member id", QuickstartLoyalty.memberId.getId(),
+                QuickstartLoyalty.checkInEvent.getMember().getId());
         assertEquals("check checkout latitude", 51.5014, QuickstartLoyalty.checkInEvent.getLat(), 0);
         assertEquals("check checkout longitude", 0.1419, QuickstartLoyalty.checkInEvent.getLon(), 0);
-        assertEquals("check checkout address", "Buckingham Palace, Westminster, London SW1A 1AA", QuickstartLoyalty.checkInEvent.getAddress());
+        assertEquals("check checkout address", "Buckingham Palace, Westminster, London SW1A 1AA",
+                QuickstartLoyalty.checkInEvent.getAddress());
         assertEquals("check checkout externalId", "7253300199294", QuickstartLoyalty.checkInEvent.getExternalId());
         java.util.Map<String, String> meta = QuickstartLoyalty.checkInEvent.getMetaDataMap();
         assertEquals("check checkout meta booking reference", "4929910033527", meta.get("bookingReference"));
@@ -59,11 +66,14 @@ public class QuickstartLoyaltyTest {
 
         // Test checkout event has been created
         assertNotNull("expect checkOutEvent not to be null", QuickstartLoyalty.checkOutEvent);
-        assertEquals("length of checkInEvent id should be 22 characters", 22, QuickstartLoyalty.checkOutEvent.getId().length());
-        assertEquals("check checkout event member id equals member id", QuickstartLoyalty.memberId.getId(), QuickstartLoyalty.checkInEvent.getMember().getId());
+        assertEquals("length of checkInEvent id should be 22 characters", 22,
+                QuickstartLoyalty.checkOutEvent.getId().length());
+        assertEquals("check checkout event member id equals member id", QuickstartLoyalty.memberId.getId(),
+                QuickstartLoyalty.checkInEvent.getMember().getId());
         assertEquals("check checkout latitude", 51.5014, QuickstartLoyalty.checkOutEvent.getLat(), 0);
         assertEquals("check checkout longitude", 0.1419, QuickstartLoyalty.checkOutEvent.getLon(), 0);
-        assertEquals("check checkout address", "Buckingham Palace, Westminster, London SW1A 1AA", QuickstartLoyalty.checkOutEvent.getAddress());
+        assertEquals("check checkout address", "Buckingham Palace, Westminster, London SW1A 1AA",
+                QuickstartLoyalty.checkOutEvent.getAddress());
         assertEquals("check checkout externalId", "7253300199492", QuickstartLoyalty.checkOutEvent.getExternalId());
         meta = QuickstartLoyalty.checkOutEvent.getMetaDataMap();
         assertEquals("check checkout meta booking reference", "4929910033527", meta.get("bookingReference"));
@@ -73,25 +83,28 @@ public class QuickstartLoyaltyTest {
 
         // Test Member Earn Points
         assertNotNull("expect memberPoints not to be null", QuickstartLoyalty.memberPoints);
-        assertEquals("check member points balance", 188,QuickstartLoyalty.memberPoints.getPoints(),0);
+        assertEquals("check member points balance", 188, QuickstartLoyalty.memberPoints.getPoints(), 0);
 
         // Test List Events
         Iterator<MemberEventsOuterClass.MemberEvent> events = qs.listMemberEvents();
         int eventRecord = 1;
-        while(events.hasNext()) {
+        while (events.hasNext()) {
             MemberEventsOuterClass.MemberEvent event = events.next();
             switch (eventRecord) {
                 case 1:
                     // ensure nanos for created time match
                     event = event.toBuilder().setCreated(QuickstartLoyalty.checkInEvent.getCreated()).build();
-                    assertEquals("check first listed event matches checked in event", QuickstartLoyalty.checkInEvent, event);
+                    assertEquals("check first listed event matches checked in event", QuickstartLoyalty.checkInEvent,
+                            event);
                     break;
                 case 2:
                     event = event.toBuilder().setCreated(QuickstartLoyalty.checkOutEvent.getCreated()).build();
-                    assertEquals("check second listed event matches checked out event", QuickstartLoyalty.checkOutEvent, event);
+                    assertEquals("check second listed event matches checked out event", QuickstartLoyalty.checkOutEvent,
+                            event);
                     break;
                 case 3:
-                    assertEquals("check third listed event is a points earned event", MemberEventsOuterClass.MemberEvents.EVENT_MEMBER_POINTS_EARNED, event.getEventType());
+                    assertEquals("check third listed event is a points earned event",
+                            MemberEventsOuterClass.MemberEvents.EVENT_MEMBER_POINTS_EARNED, event.getEventType());
                     meta = event.getMetaDataMap();
                     assertEquals("check points change value", "100.00", meta.get("points-change-value"));
                     assertEquals("check points before change", "88.00", meta.get("points-before-change"));
@@ -107,10 +120,14 @@ public class QuickstartLoyaltyTest {
         // List URLs
         System.out.println("Enrolment URL: " + QuickstartLoyalty.enrolmentUrls.getPageUrl());
         System.out.println("Enrolment QR Code URL: " + QuickstartLoyalty.enrolmentUrls.getQrCodeUrl());
-        System.out.println("VIP Direct Enrolment URL: " + QuickstartLoyalty.enrolmentUrls.getTierEnrolmentUrlsMap().get(QuickstartLoyalty.vipTierId.getId()));
-        System.out.println("VIP Direct Enrolment QR Code URL: " + QuickstartLoyalty.enrolmentUrls.getTierEnrolmentQRsMap().get(QuickstartLoyalty.vipTierId.getId()));
-        System.out.println("Pass URL: " + "https://" + QuickstartLoyalty.enrolmentUrls.getPageUrl().split("/")[2] + "/" + QuickstartLoyalty.memberId.getId());
-        System.out.println("VIP Pass URL: " + "https://" + QuickstartLoyalty.enrolmentUrls.getPageUrl().split("/")[2] + "/" + QuickstartLoyalty.vipMemberId.getId());
+        System.out.println("VIP Direct Enrolment URL: "
+                + QuickstartLoyalty.enrolmentUrls.getTierEnrolmentUrlsMap().get(QuickstartLoyalty.vipTierId.getId()));
+        System.out.println("VIP Direct Enrolment QR Code URL: "
+                + QuickstartLoyalty.enrolmentUrls.getTierEnrolmentQRsMap().get(QuickstartLoyalty.vipTierId.getId()));
+        System.out.println("Pass URL: " + "https://" + QuickstartLoyalty.enrolmentUrls.getPageUrl().split("/")[2] + "/"
+                + QuickstartLoyalty.memberId.getId());
+        System.out.println("VIP Pass URL: " + "https://" + QuickstartLoyalty.enrolmentUrls.getPageUrl().split("/")[2]
+                + "/" + QuickstartLoyalty.vipMemberId.getId());
 
         try {
             Properties properties = new Properties();
