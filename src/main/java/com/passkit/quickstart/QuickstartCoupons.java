@@ -1,12 +1,21 @@
 package com.passkit.quickstart;
 
-import com.passkit.grpc.*;
-import com.passkit.grpc.SingleUseCoupons.*;
-import com.passkit.grpc.SingleUseCoupons.CouponOuterClass.CouponStatus;
+import java.io.IOException;
 
 import com.google.protobuf.Timestamp;
-
-import java.io.IOException;
+import com.passkit.grpc.CommonObjects;
+import com.passkit.grpc.Image;
+import com.passkit.grpc.ImagesGrpc;
+import com.passkit.grpc.Personal;
+import com.passkit.grpc.ProjectOuterClass;
+import com.passkit.grpc.Protocols;
+import com.passkit.grpc.Template;
+import com.passkit.grpc.TemplatesGrpc;
+import com.passkit.grpc.SingleUseCoupons.Campaign;
+import com.passkit.grpc.SingleUseCoupons.CouponOuterClass;
+import com.passkit.grpc.SingleUseCoupons.CouponOuterClass.CouponStatus;
+import com.passkit.grpc.SingleUseCoupons.Offer;
+import com.passkit.grpc.SingleUseCoupons.SingleUseCouponsGrpc;
 
 /* Quickstart Coupons runs through the high level steps required to create a Campaign from scratch, create a coupon and create an offer using the PassKit gRPC Java SDK. 
  */
@@ -98,7 +107,8 @@ public class QuickstartCoupons {
                 createCampaign();
                 createOffer();
                 createCoupon();
-                redeemCoupon(); // Optional
+                redeemBaseCoupon(); // Optional
+                // redeemVIPCoupon();  // Optional
                 listCoupons(); // Optional
         }
 
@@ -215,7 +225,7 @@ public class QuickstartCoupons {
                 CouponOuterClass.Coupon coupon = CouponOuterClass.Coupon.newBuilder()
                                 .setOfferId(baseOfferId.getId())
                                 .setCampaignId(campaignId.getId())
-                                .setSku("sfsdg")
+                                .setSku("123456789")
                                 .setPerson(Personal.Person.newBuilder()
                                                 .setDisplayName("Loyal Larry")
                                                 // set to an email address that can receive mail to receive an enrolment
@@ -238,7 +248,7 @@ public class QuickstartCoupons {
 
         }
 
-        private void redeemCoupon() {
+        private void redeemBaseCoupon() {
                 // Redeem base coupon, if redeemed pass url will no longer be valid
 
                 CouponOuterClass.Coupon baseRequest = CouponOuterClass.Coupon.newBuilder()
@@ -246,7 +256,9 @@ public class QuickstartCoupons {
                                 .setCampaignId(campaignId.getId())
                                 .build();
                 couponsStub.redeemCoupon(baseRequest);
+        }
 
+        private void redeemVIPCoupon() {
                 // Redeem vip coupon, if redeemed pass url will no longer be valid
                 CouponOuterClass.Coupon vipRequest = CouponOuterClass.Coupon.newBuilder()
                                 .setId(vipCouponId.getId())
