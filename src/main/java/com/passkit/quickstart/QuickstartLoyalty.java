@@ -120,7 +120,7 @@ public class QuickstartLoyalty {
                 getDistribution();
                 getMemberByExternalId();
                 listMemberEvents();
-                getSmartPassLink();
+                // getSmartPassLink();
         }
 
         private void createImages() {
@@ -312,6 +312,8 @@ public class QuickstartLoyalty {
                 externalId = membersStub.getMemberRecordByExternalId(request);
         }
 
+        // Sample code to show how to get a SmartPass link.  SmartPass Links only create a pass record if they are
+        // clicked.
         private void getSmartPassLink() {
                 CommonObjects.Url projectDistributionUrl = CommonObjects.Url.newBuilder()
                                 .setUrl("https://pub1.pskt.io/c/6mkens") // This is the PassKit Url found in the

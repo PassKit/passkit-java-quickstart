@@ -42,7 +42,7 @@ public class GrpcConnectionPool {
                         properties.getProperty("credentials.certificate",
                                 "src/main/resources/credentials/certificate.pem"),
                         properties.getProperty("credentials.key", "src/main/resources/credentials/key-java.pem"),
-                        properties.getProperty("credentials.password", "password"));
+                        properties.getProperty("credentials.password", "password").replaceAll("^['\"]|['\"]$", ""));
 
                 ManagedChannel channel = NettyChannelBuilder.forAddress(host, port)
                         .sslContext(ctx)

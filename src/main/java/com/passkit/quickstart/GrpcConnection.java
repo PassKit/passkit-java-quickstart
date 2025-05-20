@@ -41,7 +41,7 @@ public final class GrpcConnection {
                         properties.getProperty("credentials.chain", "src/main/resources/credentials/ca-chain.pem"),
                         properties.getProperty("credentials.certificate", "src/main/resources/credentials/certificate.pem"),
                         properties.getProperty("credentials.key", "src/main/resources/credentials/key-java.pem"),
-                        properties.getProperty("credentials.password", "password"));
+                        properties.getProperty("credentials.password", "password").replaceAll("^['\"]|['\"]$", ""));
                 channel = NettyChannelBuilder.forAddress(mHost, mPort)
                         .negotiationType(NegotiationType.TLS)
                         .sslContext(ctx)
