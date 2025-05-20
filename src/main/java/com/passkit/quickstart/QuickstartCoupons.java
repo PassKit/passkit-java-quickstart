@@ -1,21 +1,12 @@
 package com.passkit.quickstart;
 
-import java.io.IOException;
+import com.passkit.grpc.*;
+import com.passkit.grpc.SingleUseCoupons.*;
+import com.passkit.grpc.SingleUseCoupons.CouponOuterClass.CouponStatus;
 
 import com.google.protobuf.Timestamp;
-import com.passkit.grpc.CommonObjects;
-import com.passkit.grpc.Image;
-import com.passkit.grpc.ImagesGrpc;
-import com.passkit.grpc.Personal;
-import com.passkit.grpc.ProjectOuterClass;
-import com.passkit.grpc.Protocols;
-import com.passkit.grpc.Template;
-import com.passkit.grpc.TemplatesGrpc;
-import com.passkit.grpc.SingleUseCoupons.Campaign;
-import com.passkit.grpc.SingleUseCoupons.CouponOuterClass;
-import com.passkit.grpc.SingleUseCoupons.CouponOuterClass.CouponStatus;
-import com.passkit.grpc.SingleUseCoupons.Offer;
-import com.passkit.grpc.SingleUseCoupons.SingleUseCouponsGrpc;
+
+import java.io.IOException;
 
 /* Quickstart Coupons runs through the high level steps required to create a Campaign from scratch, create a coupon and create an offer using the PassKit gRPC Java SDK. 
  */
