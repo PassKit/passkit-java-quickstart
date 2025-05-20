@@ -4,9 +4,6 @@ import com.passkit.grpc.*;
 import com.passkit.grpc.Members.*;
 import com.passkit.grpc.Members.MemberOuterClass.Member;
 import com.passkit.grpc.Members.MemberOuterClass.MemberRecordByExternalIdRequest;
-import com.passkit.grpc.Members.ProgramOuterClass.Program;
-import com.passkit.grpc.Raw.Project;
-import com.passkit.grpc.Distribution;
 
 import java.io.IOException;
 import java.util.Iterator;
