@@ -49,6 +49,7 @@ public class QuickstartLoyalty {
                         templatesStub = TemplatesGrpc.newBlockingStub(conn.getChannel());
                         distributionStub = DistributionGrpc.newBlockingStub(conn.getChannel());
                         membersStub = MembersGrpc.newBlockingStub(conn.getChannel());
+                        usersStub = UsersGrpc.newBlockingStub(conn.getChannel());
                 } catch (Exception e) {
                         e.printStackTrace();
                         conn.closeChannel();
@@ -67,6 +68,7 @@ public class QuickstartLoyalty {
         private static MembersGrpc.MembersBlockingStub membersStub;
         private static TemplatesGrpc.TemplatesBlockingStub templatesStub;
         private static DistributionGrpc.DistributionBlockingStub distributionStub;
+        private static UsersGrpc.UsersBlockingStub usersStub;
 
         /*
          * Quickstart will walk through the following steps:
@@ -94,6 +96,7 @@ public class QuickstartLoyalty {
         public static CommonObjects.Id baseTemplateId;
         public static CommonObjects.Id vipTemplateId;
         public static CommonObjects.Id programId;
+        public static com.passkit.grpc.ProjectOuterClass.Project project;
         public static CommonObjects.Id baseTierId;
         public static CommonObjects.Id vipTierId;
         public static String vipShortCode;
@@ -315,8 +318,12 @@ public class QuickstartLoyalty {
         // Sample code to show how to get a SmartPass link.  SmartPass Links only create a pass record if they are
         // clicked.
         private void getSmartPassLink() {
+
+                project = usersStub.getProjectByUuid(programId);
+                String url = "https://pub1.pskt.io/c/" + project.getShortCode();
+
                 CommonObjects.Url projectDistributionUrl = CommonObjects.Url.newBuilder()
-                                .setUrl("https://pub1.pskt.io/c/6mkens") // This is the PassKit Url found in the
+                                .setUrl(url) // This is the PassKit Url found in the
                                                                          // settings section of the project under smart
                                                                          // pass links and then the tab command line
                                                                          // tools

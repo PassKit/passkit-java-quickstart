@@ -55,7 +55,7 @@ You will need the following:
     
 ### Running the tests
 
-Run `gradle test --tests QuickstartLoyaltyTest` or `gradle test --tests QuickstartLEventTicketsTest` or `gradle test --tests QuickstartCouponsTest` or `gradle test --tests QuickstartFlightTicketsTest` in the terminal.
+Run `gradle test --tests QuickstartLoyaltyTest` or `gradle test --tests QuickstartEventTicketsTest` or `gradle test --tests QuickstartCouponsTest` or `gradle test --tests QuickstartFlightTicketsTest` in the terminal.
 
 The Loyalty tests will create a membership program with 2 tiers, base and VIP.  It will enrol two members, one in each tier.
 The Event Tickets tests will create a venue, production, and event with 2 ticket types and create 2 tickets with the same order number.

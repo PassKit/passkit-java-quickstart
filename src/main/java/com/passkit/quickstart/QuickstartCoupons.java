@@ -98,7 +98,8 @@ public class QuickstartCoupons {
                 createCampaign();
                 createOffer();
                 createCoupon();
-                redeemCoupon(); // Optional
+                redeemBaseCoupon(); // Optional
+                // redeemVIPCoupon();  // Optional
                 listCoupons(); // Optional
         }
 
@@ -215,7 +216,7 @@ public class QuickstartCoupons {
                 CouponOuterClass.Coupon coupon = CouponOuterClass.Coupon.newBuilder()
                                 .setOfferId(baseOfferId.getId())
                                 .setCampaignId(campaignId.getId())
-                                .setSku("sfsdg")
+                                .setSku("123456789")
                                 .setPerson(Personal.Person.newBuilder()
                                                 .setDisplayName("Loyal Larry")
                                                 // set to an email address that can receive mail to receive an enrolment
@@ -238,7 +239,7 @@ public class QuickstartCoupons {
 
         }
 
-        private void redeemCoupon() {
+        private void redeemBaseCoupon() {
                 // Redeem base coupon, if redeemed pass url will no longer be valid
 
                 CouponOuterClass.Coupon baseRequest = CouponOuterClass.Coupon.newBuilder()
@@ -246,7 +247,9 @@ public class QuickstartCoupons {
                                 .setCampaignId(campaignId.getId())
                                 .build();
                 couponsStub.redeemCoupon(baseRequest);
+        }
 
+        private void redeemVIPCoupon() {
                 // Redeem vip coupon, if redeemed pass url will no longer be valid
                 CouponOuterClass.Coupon vipRequest = CouponOuterClass.Coupon.newBuilder()
                                 .setId(vipCouponId.getId())
