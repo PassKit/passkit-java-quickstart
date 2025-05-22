@@ -77,7 +77,7 @@ public class QuickstartFlightTickets {
         private static ImagesGrpc.ImagesBlockingStub imagesStub;
         private static FlightsGrpc.FlightsBlockingStub flightsStub;
         private static TemplatesGrpc.TemplatesBlockingStub templatesStub;
-        private static String appleCertificate = ""; // Replace with your apple certificate id
+        private static String appleCertificate = "pass.com.passkit.e2e"; // Replace with your apple certificate id
 
         /*
          * Quickstart will walk through the following steps:
@@ -224,7 +224,7 @@ public class QuickstartFlightTickets {
                                 .build();
                 FlightOuterClass.Flight flight = FlightOuterClass.Flight.newBuilder()
                                 .setCarrierCode("YY")
-                                .setFlightNumber("YY123")
+                                .setFlightNumber("123")
                                 .setBoardingPoint("YY4")
                                 .setDeplaningPoint("ADP")
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
@@ -244,7 +244,7 @@ public class QuickstartFlightTickets {
                 FlightDesignatorOuterClass.FlightDesignator flightDesignator = FlightDesignatorOuterClass.FlightDesignator
                                 .newBuilder()
                                 .setCarrierCode("YY")
-                                .setFlightNumber("YY123")
+                                .setFlightNumber("123")
                                 .setRevision(2)
                                 .setSchedule(FlightSchedule.newBuilder()
                                                 .setMonday(FlightTimes.newBuilder()
@@ -332,7 +332,7 @@ public class QuickstartFlightTickets {
                                 .setBoardingPoint("YY4")
                                 .setDeplaningPoint("ADP")
                                 .setCarrierCode("YY")
-                                .setFlightNumber("YY123")
+                                .setFlightNumber("123")
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
                                                 .setDay(25)
                                                 .setMonth(4)
@@ -352,7 +352,7 @@ public class QuickstartFlightTickets {
         public static void cleanup() {
                 flightsStub.deleteFlight(FlightOuterClass.FlightRequest.newBuilder()
                                 .setCarrierCode("YY")
-                                .setFlightNumber("YY123")
+                                .setFlightNumber("123")
                                 .setBoardingPoint("YY4")
                                 .setDeplaningPoint("ADP")
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
@@ -363,7 +363,8 @@ public class QuickstartFlightTickets {
                                 .build());
                 flightsStub.deleteFlightDesignator(FlightDesignatorRequest.newBuilder()
                                 .setCarrierCode("YY")
-                                .setFlightNumber("YY123")
+                                .setFlightNumber("123")
+                                .setRevision(2)
                                 .build());
                 flightsStub.deletePort(AirportCode.newBuilder()
                                 .setAirportCode("YY4")
@@ -371,6 +372,12 @@ public class QuickstartFlightTickets {
                 flightsStub.deletePort(AirportCode.newBuilder()
                                 .setAirportCode("ADP")
                                 .build());
+                // sleep to allow deleting of boarding passes for deleted flight to be processed
+                try {
+                        Thread.sleep(5 * 1000L);
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
                 flightsStub.deleteCarrier(CarrierCode.newBuilder()
                                 .setCarrierCode("YY")
                                 .build());
