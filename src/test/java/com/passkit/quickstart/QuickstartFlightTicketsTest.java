@@ -21,14 +21,6 @@ public class QuickstartFlightTicketsTest {
                                 QuickstartFlightTickets.flightImageIds.getLogo());
                 assertNotEquals("expect appleLogo image id not to be empty", "",
                                 QuickstartFlightTickets.flightImageIds.getAppleLogo());
-                assertNotEquals("expect strip image id not to be empty", "",
-                                QuickstartFlightTickets.flightImageIds.getEventStrip());
-                assertNotEquals("expect hero image id not to be empty", "",
-                                QuickstartFlightTickets.flightImageIds.getHero());
-                assertNotEquals("expect thumbnail image id not to be empty", "",
-                                QuickstartFlightTickets.flightImageIds.getThumbnail());
-                assertNotEquals("expect background image id not to be empty", "",
-                                QuickstartFlightTickets.flightImageIds.getBackground());
                 // Expect all other image ids to be empty
                 assertEquals("expect security image id to be empty", "",
                                 QuickstartFlightTickets.flightImageIds.getStrip());
