@@ -120,22 +120,13 @@ public class QuickstartFlightTickets {
                         icon = Helpers.encodeFileToBase64("src/main/resources/images/eventTickets/icon.png");
                         logo = Helpers.encodeFileToBase64("src/main/resources/images/eventTickets/logo.png");
                         appleLogo = Helpers.encodeFileToBase64("src/main/resources/images/eventTickets/appleLogo.png");
-                        background = Helpers
-                                        .encodeFileToBase64("src/main/resources/images/eventTickets/background.png");
-                        thumbnail = Helpers.encodeFileToBase64("src/main/resources/images/eventTickets/thumbnail.png");
-                        hero = Helpers.encodeFileToBase64("src/main/resources/images/eventTickets/hero.png");
-                        eventStrip = Helpers.encodeFileToBase64("src/main/resources/images/eventTickets/strip.png");
 
                         Image.CreateImageInput imageInput = Image.CreateImageInput.newBuilder()
                                         .setImageData(Image.ImageData.newBuilder()
                                                         .setIcon(icon)
                                                         .setLogo(logo)
                                                         .setAppleLogo(appleLogo)
-                                                        .setBackground(background)
-                                                        .setThumbnail(thumbnail)
-                                                        .setHero(hero)
-                                                        .setEventStrip(eventStrip))
-                                        .build();
+                                        ).build();
 
                         flightImageIds = imagesStub.createImages(imageInput);
                 } catch (IOException e) {
@@ -160,8 +151,6 @@ public class QuickstartFlightTickets {
                                                 .setIcon(flightImageIds.getIcon())
                                                 .setLogo(flightImageIds.getLogo())
                                                 .setAppleLogo(flightImageIds.getAppleLogo())
-                                                .setEventStrip(flightImageIds.getEventStrip())
-                                                .setHero(flightImageIds.getHero())
                                                 .build())
                                 .setColors(Template.Colors.newBuilder()
                                                 .setTextColor("000000")
@@ -220,7 +209,7 @@ public class QuickstartFlightTickets {
                 System.out.println("creating flight");
                 // Modify flight details below
                 LocalDateTime flightDateTime = LocalDateTime.newBuilder()
-                                .setDateTime("2022-04-25T13:00:00")
+                                .setDateTime("2026-04-25T13:00:00")
                                 .build();
                 FlightOuterClass.Flight flight = FlightOuterClass.Flight.newBuilder()
                                 .setCarrierCode("YY")
@@ -230,7 +219,7 @@ public class QuickstartFlightTickets {
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
                                                 .setDay(25)
                                                 .setMonth(4)
-                                                .setYear(2022)
+                                                .setYear(2026)
                                                 .build())
                                 .setScheduledDepartureTime(flightDateTime)
                                 .setPassTemplateId(templateId.getId())
@@ -336,7 +325,7 @@ public class QuickstartFlightTickets {
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
                                                 .setDay(25)
                                                 .setMonth(4)
-                                                .setYear(2022)
+                                                .setYear(2026)
                                                 .build())
                                 .setPassenger(PassengerOuterClass.Passenger.newBuilder()
                                                 .setPassengerDetails(Personal.Person.newBuilder()
@@ -358,7 +347,7 @@ public class QuickstartFlightTickets {
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
                                                 .setDay(25)
                                                 .setMonth(4)
-                                                .setYear(2022)
+                                                .setYear(2026)
                                                 .build())
                                 .build());
                 flightsStub.deleteFlightDesignator(FlightDesignatorRequest.newBuilder()
@@ -385,10 +374,6 @@ public class QuickstartFlightTickets {
                 imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getIcon()).build());
                 imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getLogo()).build());
                 imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getAppleLogo()).build());
-                imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getEventStrip()).build());
-                imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getHero()).build());
-                imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getBackground()).build());
-                imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getThumbnail()).build());
 
                 // always close the channel when there will be no further calls made.
                 conn.closeChannel();
