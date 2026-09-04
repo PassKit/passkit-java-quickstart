@@ -13,17 +13,20 @@ import com.passkit.grpc.Flights.Airport;
 import com.passkit.grpc.Flights.Airport.AirportCode;
 import com.passkit.grpc.Flights.BoardingPass.BoardingPassesResponse;
 import com.passkit.grpc.Flights.BoardingPass;
+import com.passkit.grpc.Flights.Barcode.FlightSchedule;
+import com.passkit.grpc.Flights.Barcode.FlightTimes;
 import com.passkit.grpc.Flights.CarrierOuterClass;
 import com.passkit.grpc.Flights.CarrierOuterClass.CarrierCode;
 import com.passkit.grpc.Flights.FlightDesignatorOuterClass;
 import com.passkit.grpc.Flights.FlightDesignatorOuterClass.FlightDesignatorRequest;
-import com.passkit.grpc.Flights.FlightDesignatorOuterClass.FlightSchedule;
-import com.passkit.grpc.Flights.FlightDesignatorOuterClass.FlightTimes;
 import com.passkit.grpc.Flights.FlightOuterClass;
 import com.passkit.grpc.Flights.FlightsGrpc;
 import com.passkit.grpc.Flights.PassengerOuterClass;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 /* Quickstart Flight Tickets runs through the high level steps required to create flight tickets from scratch using the PassKit gRPC Java SDK. 
  */
@@ -60,10 +63,10 @@ public class QuickstartFlightTickets {
                         imagesStub = ImagesGrpc.newBlockingStub(conn.getChannel());
                         templatesStub = TemplatesGrpc.newBlockingStub(conn.getChannel());
                         flightsStub = FlightsGrpc.newBlockingStub(conn.getChannel());
+                        appleCertificate = AppConfig.load().appleCertificateId();
                 } catch (Exception e) {
-                        e.printStackTrace();
-                        conn.closeChannel();
-                        System.exit(1);
+                        if (conn != null) conn.closeChannel();
+                        throw new IllegalStateException("Could not initialise the flights quickstart", e);
                 }
         }
 
@@ -77,7 +80,15 @@ public class QuickstartFlightTickets {
         private static ImagesGrpc.ImagesBlockingStub imagesStub;
         private static FlightsGrpc.FlightsBlockingStub flightsStub;
         private static TemplatesGrpc.TemplatesBlockingStub templatesStub;
-        private static String appleCertificate = "pass.com.passkit.e2e"; // Replace with your apple certificate id
+        private static String appleCertificate;
+        private static final String carrierCode = "YY";
+        private static final String FLIGHT_NUMBER = Long.toString(System.currentTimeMillis() % 900 + 100);
+        private static final String origin = "YY4";
+        private static final String destination = "ADP";
+        private static final LocalDate DEPARTURE_DATE = LocalDate.now().plusDays(14);
+        private static boolean createdCarrier;
+        private static boolean createdOrigin;
+        private static boolean createdDestination;
 
         /*
          * Quickstart will walk through the following steps:
@@ -125,8 +136,8 @@ public class QuickstartFlightTickets {
                                         .setImageData(Image.ImageData.newBuilder()
                                                         .setIcon(icon)
                                                         .setLogo(logo)
-                                                        .setAppleLogo(appleLogo)
-                                        ).build();
+                                                        .setAppleLogo(appleLogo))
+                                        .build();
 
                         flightImageIds = imagesStub.createImages(imageInput);
                 } catch (IOException e) {
@@ -165,43 +176,40 @@ public class QuickstartFlightTickets {
         }
 
         private void createCarrier() {
-                // Creates carrier
                 System.out.println("creating carrier");
-                // Modify carrier
                 CarrierOuterClass.Carrier carrier = CarrierOuterClass.Carrier.newBuilder()
-                                .setAirlineName("ABC Airline ")
-                                .setIataCarrierCode("YY")
+                                .setAirlineName("Quickstart Airline")
+                                .setIataCarrierCode(carrierCode)
                                 .setPassTypeIdentifier(appleCertificate)
                                 .build();
-                flightsStub.createCarrier(carrier);
+                try {
+                        flightsStub.createCarrier(carrier);
+                        createdCarrier = true;
+                } catch (StatusRuntimeException e) {
+                        if (e.getStatus().getCode() != Status.Code.ALREADY_EXISTS) throw e;
+                        System.out.println("Reusing existing carrier " + carrierCode + ".");
+                }
         }
 
         private void createAirport() {
-                // Creates departure and arrival airports if not currently created
                 System.out.println("creating departure airport");
-                // Modify depature airport
-                Airport.Port departureAirport = Airport.Port.newBuilder()
-                                .setAirportName("ABC Airport")
-                                .setCityName("ABC")
-                                .setIataAirportCode("YY4")
-                                .setIcaoAirportCode("YYYY")
-                                .setCountryCode("IE")
-                                .setTimezone("Europe/London")
-                                .build();
-
+                createdOrigin = createPort("Quickstart Departure Airport", "Origin", origin, "YYYY", "GB", "Europe/London");
                 System.out.println("creating arrival airport");
-                // Modify arrival airport
-                Airport.Port arrivalAirport = Airport.Port.newBuilder()
-                                .setAirportName("DEF Airport")
-                                .setCityName("DEF")
-                                .setIataAirportCode("ADP")
-                                .setIcaoAirportCode("ADPY")
-                                .setCountryCode("HK")
-                                .setTimezone("Asia/Hong_Kong")
-                                .build();
+                createdDestination = createPort("Quickstart Arrival Airport", "Destination", destination, "VHHH", "HK", "Asia/Hong_Kong");
+        }
 
-                flightsStub.createPort(departureAirport);
-                flightsStub.createPort(arrivalAirport);
+        private boolean createPort(String name, String city, String iata, String icao, String country, String timezone) {
+                Airport.Port port = Airport.Port.newBuilder().setAirportName(name).setCityName(city)
+                                .setIataAirportCode(iata).setIcaoAirportCode(icao)
+                                .setCountryCode(country).setTimezone(timezone).build();
+                try {
+                        flightsStub.createPort(port);
+                        return true;
+                } catch (StatusRuntimeException e) {
+                        if (e.getStatus().getCode() != Status.Code.ALREADY_EXISTS) throw e;
+                        System.out.println("Reusing existing airport " + iata + ".");
+                        return false;
+                }
         }
 
         private void createFlight() {
@@ -209,17 +217,17 @@ public class QuickstartFlightTickets {
                 System.out.println("creating flight");
                 // Modify flight details below
                 LocalDateTime flightDateTime = LocalDateTime.newBuilder()
-                                .setDateTime("2026-04-25T13:00:00")
+                                .setDateTime(DEPARTURE_DATE + "T13:00:00")
                                 .build();
                 FlightOuterClass.Flight flight = FlightOuterClass.Flight.newBuilder()
-                                .setCarrierCode("YY")
-                                .setFlightNumber("123")
-                                .setBoardingPoint("YY4")
-                                .setDeplaningPoint("ADP")
+                                .setCarrierCode(carrierCode)
+                                .setFlightNumber(FLIGHT_NUMBER)
+                                .setBoardingPoint(origin)
+                                .setDeplaningPoint(destination)
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
-                                                .setDay(25)
-                                                .setMonth(4)
-                                                .setYear(2026)
+                                                .setDay(DEPARTURE_DATE.getDayOfMonth())
+                                                .setMonth(DEPARTURE_DATE.getMonthValue())
+                                                .setYear(DEPARTURE_DATE.getYear())
                                                 .build())
                                 .setScheduledDepartureTime(flightDateTime)
                                 .setPassTemplateId(templateId.getId())
@@ -232,8 +240,8 @@ public class QuickstartFlightTickets {
                 // Modify flight designator below
                 FlightDesignatorOuterClass.FlightDesignator flightDesignator = FlightDesignatorOuterClass.FlightDesignator
                                 .newBuilder()
-                                .setCarrierCode("YY")
-                                .setFlightNumber("123")
+                                .setCarrierCode(carrierCode)
+                                .setFlightNumber(FLIGHT_NUMBER)
                                 .setRevision(2)
                                 .setSchedule(FlightSchedule.newBuilder()
                                                 .setMonday(FlightTimes.newBuilder()
@@ -306,8 +314,8 @@ public class QuickstartFlightTickets {
                                                                 .setScheduledArrivalTime(Time.newBuilder().setHour(14)
                                                                                 .setMinute(00).setSecond(0)))
                                                 .build())
-                                .setOrigin("YY4")
-                                .setDestination("ADP")
+                                .setOrigin(origin)
+                                .setDestination(destination)
                                 .setPassTemplateId(templateId.getId())
                                 .build();
                 flightsStub.createFlightDesignator(flightDesignator);
@@ -318,14 +326,14 @@ public class QuickstartFlightTickets {
                 // Modify boarding pass below
                 BoardingPass.BoardingPassRecord boardingPassRecord = BoardingPass.BoardingPassRecord.newBuilder()
                                 .setOperatingCarrierPNR("P8F8R8")
-                                .setBoardingPoint("YY4")
-                                .setDeplaningPoint("ADP")
-                                .setCarrierCode("YY")
-                                .setFlightNumber("123")
+                                .setBoardingPoint(origin)
+                                .setDeplaningPoint(destination)
+                                .setCarrierCode(carrierCode)
+                                .setFlightNumber(FLIGHT_NUMBER)
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
-                                                .setDay(25)
-                                                .setMonth(4)
-                                                .setYear(2026)
+                                                .setDay(DEPARTURE_DATE.getDayOfMonth())
+                                                .setMonth(DEPARTURE_DATE.getMonthValue())
+                                                .setYear(DEPARTURE_DATE.getYear())
                                                 .build())
                                 .setPassenger(PassengerOuterClass.Passenger.newBuilder()
                                                 .setPassengerDetails(Personal.Person.newBuilder()
@@ -340,36 +348,33 @@ public class QuickstartFlightTickets {
 
         public static void cleanup() {
                 flightsStub.deleteFlight(FlightOuterClass.FlightRequest.newBuilder()
-                                .setCarrierCode("YY")
-                                .setFlightNumber("123")
-                                .setBoardingPoint("YY4")
-                                .setDeplaningPoint("ADP")
+                                .setCarrierCode(carrierCode)
+                                .setFlightNumber(FLIGHT_NUMBER)
+                                .setBoardingPoint(origin)
+                                .setDeplaningPoint(destination)
                                 .setDepartureDate(CommonObjects.Date.newBuilder()
-                                                .setDay(25)
-                                                .setMonth(4)
-                                                .setYear(2026)
+                                                .setDay(DEPARTURE_DATE.getDayOfMonth())
+                                                .setMonth(DEPARTURE_DATE.getMonthValue())
+                                                .setYear(DEPARTURE_DATE.getYear())
                                                 .build())
                                 .build());
                 flightsStub.deleteFlightDesignator(FlightDesignatorRequest.newBuilder()
-                                .setCarrierCode("YY")
-                                .setFlightNumber("123")
+                                .setCarrierCode(carrierCode)
+                                .setFlightNumber(FLIGHT_NUMBER)
                                 .setRevision(2)
                                 .build());
-                flightsStub.deletePort(AirportCode.newBuilder()
-                                .setAirportCode("YY4")
-                                .build());
-                flightsStub.deletePort(AirportCode.newBuilder()
-                                .setAirportCode("ADP")
-                                .build());
+                if (createdOrigin) flightsStub.deletePort(AirportCode.newBuilder()
+                                .setAirportCode(origin).build());
+                if (createdDestination) flightsStub.deletePort(AirportCode.newBuilder()
+                                .setAirportCode(destination).build());
                 // sleep to allow deleting of boarding passes for deleted flight to be processed
                 try {
                         Thread.sleep(5 * 1000L);
                 } catch (Exception e) {
                         e.printStackTrace();
                 }
-                flightsStub.deleteCarrier(CarrierCode.newBuilder()
-                                .setCarrierCode("YY")
-                                .build());
+                if (createdCarrier) flightsStub.deleteCarrier(CarrierCode.newBuilder()
+                                .setCarrierCode(carrierCode).build());
                 templatesStub.deleteTemplate(templateId);
                 imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getIcon()).build());
                 imagesStub.deleteImage(CommonObjects.Id.newBuilder().setId(flightImageIds.getLogo()).build());
@@ -381,6 +386,11 @@ public class QuickstartFlightTickets {
                 // Shutdown if you are using the connection pool
                 // shutdownPool();
         }
+
+        public static void close() {
+                if (conn != null) conn.closeChannel();
+        }
+
 
         // Method to shut down the pool
         /**

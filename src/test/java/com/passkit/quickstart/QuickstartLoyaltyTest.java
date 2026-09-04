@@ -3,9 +3,9 @@ package com.passkit.quickstart;
 import com.passkit.grpc.Members.MemberEventsOuterClass;
 
 import org.junit.Test;
+import org.junit.Assume;
 
 import java.util.Iterator;
-import java.util.Properties;
 
 import static org.junit.Assert.*;
 
@@ -13,6 +13,8 @@ public class QuickstartLoyaltyTest {
 
     @Test
     public void quickstartLoyaltyTest() {
+        Assume.assumeTrue("Set PASSKIT_RUN_LIVE_TESTS=true to run API tests",
+                "true".equalsIgnoreCase(System.getenv("PASSKIT_RUN_LIVE_TESTS")));
         // Include pool size if using connection pooling e.g. 5
         QuickstartLoyalty qs = new QuickstartLoyalty();
         qs.quickStart();
@@ -130,10 +132,8 @@ public class QuickstartLoyaltyTest {
                 + "/" + QuickstartLoyalty.vipMemberId.getId());
 
         try {
-            Properties properties = new Properties();
-            properties.load(GrpcConnection.class.getResourceAsStream("/passkit.properties"));
-            String pref = properties.getProperty("delete.assets.timeout.seconds", "0");
-            int timeout = Integer.parseInt(pref);
+            int timeout = AppConfig.load().cleanupDelaySeconds();
+            String pref = Integer.toString(timeout);
             if (timeout == -1) {
                 System.exit(0);
             }

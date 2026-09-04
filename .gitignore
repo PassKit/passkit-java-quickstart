@@ -1,5 +1,13 @@
-build
-gradle
-.gradle
-.idea
+build/
+bin/
+.gradle/
+.idea/
+.vscode/
+*.iml
+*.class
+*.log
+hs_err_pid*
+.DS_Store
+.env
 *.pem
+src/main/resources/credentials/

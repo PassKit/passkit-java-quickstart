@@ -50,10 +50,12 @@ public class QuickstartLoyalty {
                         distributionStub = DistributionGrpc.newBlockingStub(conn.getChannel());
                         membersStub = MembersGrpc.newBlockingStub(conn.getChannel());
                         usersStub = UsersGrpc.newBlockingStub(conn.getChannel());
+                        AppConfig config = AppConfig.load();
+                        baseEmail = config.baseEmail();
+                        vipEmail = config.vipEmail();
                 } catch (Exception e) {
-                        e.printStackTrace();
-                        conn.closeChannel();
-                        System.exit(1);
+                        if (conn != null) conn.closeChannel();
+                        throw new IllegalStateException("Could not initialise the membership quickstart", e);
                 }
         }
 
@@ -69,6 +71,8 @@ public class QuickstartLoyalty {
         private static TemplatesGrpc.TemplatesBlockingStub templatesStub;
         private static DistributionGrpc.DistributionBlockingStub distributionStub;
         private static UsersGrpc.UsersBlockingStub usersStub;
+        private static String baseEmail;
+        private static String vipEmail;
 
         /*
          * Quickstart will walk through the following steps:
@@ -107,8 +111,6 @@ public class QuickstartLoyalty {
         public static MemberOuterClass.MemberPoints memberPoints;
         public static Distribution.EnrolmentUrls enrolmentUrls;
         public static CommonObjects.Url smartPassUrl;
-        public static String baseEmail = "loyal.larry@dummy.passkit.com"; // Change to your email to receive cards
-        public static String vipEmail = "harry.highroller@dummy.passkit.com"; // Change to your email to receive cards
         public static Member externalId;
 
         public void quickStart() {
@@ -235,9 +237,6 @@ public class QuickstartLoyalty {
                                 .setExternalId("12345")
                                 .setPerson(Personal.Person.newBuilder()
                                                 .setDisplayName("Loyal Larry")
-                                                // set to an email address that can receive mail to receive an enrolment
-                                                // email.
-
                                                 .setEmailAddress(baseEmail)
                                                 .build())
                                 .setPoints(88)
@@ -315,7 +314,8 @@ public class QuickstartLoyalty {
                 externalId = membersStub.getMemberRecordByExternalId(request);
         }
 
-        // Sample code to show how to get a SmartPass link.  SmartPass Links only create a pass record if they are
+        // Sample code to show how to get a SmartPass link. SmartPass Links only create
+        // a pass record if they are
         // clicked.
         private void getSmartPassLink() {
 
@@ -324,9 +324,9 @@ public class QuickstartLoyalty {
 
                 CommonObjects.Url projectDistributionUrl = CommonObjects.Url.newBuilder()
                                 .setUrl(url) // This is the PassKit Url found in the
-                                                                         // settings section of the project under smart
-                                                                         // pass links and then the tab command line
-                                                                         // tools
+                                             // settings section of the project under smart
+                                             // pass links and then the tab command line
+                                             // tools
                                 .build();
                 Distribution.SmartPassLinkRequest smartPassLink = Distribution.SmartPassLinkRequest.newBuilder()
                                 .setProjectDistributionUrl(projectDistributionUrl)
@@ -356,6 +356,10 @@ public class QuickstartLoyalty {
 
                 // Shutdown if you are using the connection pool
                 // shutdownPool();
+        }
+
+        public static void close() {
+                if (conn != null) conn.closeChannel();
         }
 
         // Method to shut down the pool

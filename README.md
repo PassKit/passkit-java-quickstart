@@ -1,25 +1,38 @@
-PassKit Java Quickstart
-=======================
+# PassKit Java Quickstart
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Maven Central](https://img.shields.io/maven-central/v/com.passkit.grpc/sdk.svg?label=Maven%20Central)](https://search.maven.org/artifact/com.passkit.grpc/sdk)
 
-### Overview
+## Overview
 
-This quickstart aims to help  get Java developers up and running with the PassKit SDK as quickly as possible.
+Create and manage Apple Wallet and Google Wallet membership cards, coupons, event tickets, and boarding passes with the PassKit Java gRPC SDK.
 
-### Prerequisites
+Each guided workflow creates a complete set of sample assets and cleans them up afterward. The shared `PassKitApi` exposes every generated SDK service, including membership, coupons, event tickets, flights, templates, images, distribution, messages, analytics, integrations, users, certificates, scheduler, and raw operations.
+
+## Prerequisites
 
 You will need the following:
 
 - A PassKit account (signup for free at https://app.passkit.com)
 - Your PassKit SDK Credentials (available from the https://app.passkit.com/app/account/developer-tools)
-- Java JDK 8 or above (11.0.9LTS recommended) from https://www.oracle.com/java/technologies/downloads/ (https://docs.oracle.com/en/java/javase/18/install/overview-jdk-installation.html - guide on how to download)
-- Gradle Build Tool from https://gradle.org/install/ with guide on how to install
+- Java 11 or newer (Java 21 is used in CI)
 - Apple wallet certificate id (for flights only, https://app.passkit.com/app/account/certificates)
  ![ScreenShot](src/main/resources/images/readme/certificate.png)
 
-### Configuration
+## Setup
+
+You do not need to install Gradle; this repository includes the Gradle wrapper.
+
+1. Copy `.env.example` to `.env`.
+2. Create `src/main/resources/credentials` and add `certificate.pem`, `ca-chain.pem`, and `key-java.pem`.
+3. Fill in your credential password and other values in `.env`. For flights, set `PASSKIT_APPLE_CERTIFICATE_ID`.
+
+The Java SDK uses the Java-compatible private key (`key-java.pem`). Keep `.env` and all PEM files private; they are excluded by `.gitignore`.
+
+Environment variables and `.env` take precedence over the backward-compatible `src/main/resources/passkit.properties` defaults. European accounts use `grpc.pub1.passkit.io`; US accounts should set `PASSKIT_GRPC_HOST=grpc.pub2.passkit.io`.
+
+<details>
+<summary>Legacy passkit.properties setup</summary>
 
 1. Download or clone this quickstart repository, create a folder `credentials` in the resources folder of the repository and add the following three PassKit credential files:
     - certificate.pem
@@ -32,28 +45,38 @@ You will need the following:
     - set `credentials.password` to the password that you set when requesting your SDK credentials from https://app.passkit.com
     - if you are using flights edit `credentials.appleCertificate` with your id
     - check the API region of your account [here](https://app.passkit.com/app/account/developer-tools) and change it accordingly, for Europe/Pub1 use `grpc.host = "grpc.pub1.passkit.io"` and for USA/Pub2 use `grpc.host = "grpc.pub2.passkit.io"`.
+    - If you wish to receive enrollment emails for loyalty or coupon cards edit `baseEmail` and `vipEmail`
     - set other options as required
     ![ScreenShot](src/main/resources/images/readme/properties.png)
 
-3. If you wish to receive enrollment emails for loyalty or coupon cards edit `baseEmail` and `vipEmail` on lines 77 and 78 in QuickstartLoyalty for loyalty,
-    ![ScreenShot](src/main/resources/images/readme/loyalty-email.png)
-    and lines 70 and 71 in QuickstartCoupons for coupons.
-    ![ScreenShot](src/main/resources/images/readme/coupons-email.png)
+</details>
 
-4. If you are using flights edit `appleCertificate` on line 59 
-    ![ScreenShot](src/main/resources/images/readme/apple-certificate.png)
+## Run a complete workflow
 
-5. If you will be sending large amounts of data we reccomend using connection pooling. To use connection pooling follow these steps to uncomment the relevant sections in the code:
-    - Enable Connection Pooling Declaration: Locate the section where the connection pool is declared, it should be in the top section above the stub declaration, and ensure the connection pool is enabled. You can do this by removing any comment markers or enabling the appropriate code for the pool.
-    - Activate the Pool-Based Constructor: Switch to the constructor that initializes the connection pool by removing any comment markers or enabling the constructor code. This constructor will initialize the connection pool with a specified size and use the pool for creating gRPC stubs.
-    - Disable the Single Connection Constructor: The single connection constructor, which creates only one gRPC connection, should be disabled or commented out. This ensures that the connection pool will be used instead of creating a new connection for each request.
-    - Ensure Pool Shutdown Handling: Make sure the method responsible for shutting down the connection pool is enabled. This method should be invoked when the connection pool is no longer needed to ensure all gRPC channels are closed properly.
-    - Update Cleanup Logic: Modify the cleanup logic to use the pool shutdown method. Instead of closing individual gRPC channels, the cleanup process should handle shutting down the entire connection pool once all operations are complete.
-    - Add a pool size in the relevant Test file
+```bash
+./gradlew run --args='membership'
+./gradlew run --args='coupons'
+./gradlew run --args='event-tickets'
+./gradlew run --args='flights'
+```
+
+The runner uses a four-channel round-robin pool by default. Change `PASSKIT_POOL_SIZE` if needed. Set `PASSKIT_CLEANUP_DELAY_SECONDS` to a positive number to inspect generated passes before cleanup, or `-1` to retain them.
     
 
     
-### Running the tests
+## Tests
+
+Run fast local tests (live API tests are skipped):
+
+```bash
+./gradlew test
+```
+
+After configuring credentials, run all live workflow tests with:
+
+```bash
+PASSKIT_RUN_LIVE_TESTS=true ./gradlew test
+```
 
 Run `gradle test --tests QuickstartLoyaltyTest` or `gradle test --tests QuickstartEventTicketsTest` or `gradle test --tests QuickstartCouponsTest` or `gradle test --tests QuickstartFlightTicketsTest` in the terminal.
 
@@ -71,17 +94,35 @@ An example of what this would look like in the terminal is shown below:
 
  ![ScreenShot](src/main/resources/images/readme/loyalty-test.png)
 
+## Shared API
+
+```java
+try (PassKitApi api = new PassKitApi()) {
+    var loyalty = api.loyalty();
+    var coupons = api.coupons();
+    var events = api.eventTickets();
+    var flights = api.flights();
+}
+```
+
+The domain facades use the same curated method names as the other PassKit quickstarts. For example, call `api.loyalty().createProgram(request)`, `api.coupons().createCoupon(request)`, or `api.flights().createBoardingPass(request)`. Java-specific adapters combine blocking calls with coupon and raw update streams.
+
+Potentially destructive bulk operations require an explicit opt-in:
+
+```java
+try (PassKitApi api = new PassKitApi(true)) {
+    api.advanced().loyalty().bulkDeleteMembers(request);
+}
+```
+
+The parity test verifies the membership, coupons, event tickets, flights, templates, images, analytics, distribution, integrations, scanners, certificates, and raw method surfaces against the shared quickstart API. The underlying typed SDK stubs remain available through compatibility accessors such as `members()`, `couponsStub()`, `rawStub()`, and `users()`.
+
 ## Documentation
 * [PassKit Membership Official Documentation](https://docs.passkit.io/protocols/member)
 * [PassKit Coupons Official Documentation](https://docs.passkit.io/protocols/coupon)
 * [PassKit Boarding Passes Official Documentation](https://docs.passkit.io/protocols/boarding)
 * [PassKit Events Official Documentation](https://docs.passkit.io/protocols/event-tickets/)
 
-### Notes
+## Licence
 
-For implementing in your own projects, use the GrpcConnection class to manage connection to the PassKit gRPC endpoints.
-
-Use the GrpcConnection's ManagedChannel object to create the stubs you require in your implementation. 
-
-
-
+MIT — see [LICENSE](LICENSE).

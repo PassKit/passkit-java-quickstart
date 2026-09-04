@@ -9,7 +9,7 @@ import io.netty.handler.ssl.SslContext;
 import javax.net.ssl.SSLException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +17,7 @@ public final class GrpcConnection {
     private static final Logger logger = Logger.getLogger(GrpcConnection.class.getName());
 
     private final ManagedChannel channel;
+    private final GrpcConnectionPool pool;
 
     private static String mHost;
     private static int mPort;
@@ -31,31 +32,9 @@ public final class GrpcConnection {
     }
 
     public GrpcConnection() throws IOException {
-        Properties properties = new Properties();
-        try {
-            properties.load(GrpcConnection.class.getResourceAsStream("/passkit.properties"));
-            mHost = properties.getProperty("grpc.host", "grpc.pub1.passkit.io");
-            mPort = Integer.parseInt(properties.getProperty("grpc.port", "443"));
-            try {
-                SslContext ctx = buildSslContext(mHost, mPort,
-                        properties.getProperty("credentials.chain", "src/main/resources/credentials/ca-chain.pem"),
-                        properties.getProperty("credentials.certificate", "src/main/resources/credentials/certificate.pem"),
-                        properties.getProperty("credentials.key", "src/main/resources/credentials/key-java.pem"),
-                        properties.getProperty("credentials.password", "password").replaceAll("^['\"]|['\"]$", ""));
-                channel = NettyChannelBuilder.forAddress(mHost, mPort)
-                        .negotiationType(NegotiationType.TLS)
-                        .sslContext(ctx)
-                        .build();
-            } catch (SSLException e) {
-                logger.log(Level.SEVERE, "couldn't build SSL context from passkit.properties values or program defaults");
-                e.printStackTrace();
-                throw new SSLException("couldn't build SSL context from passkit.properties values or program defaults", e);
-            }
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "couldn't initiate connection from passkit.properties or program defaults");
-            e.printStackTrace();
-            throw new IOException("couldn't initiate connection from passkit.properties or program defaults", e);
-        }
+        AppConfig config = AppConfig.load();
+        pool = new GrpcConnectionPool(config);
+        channel = null;
     }
 
     public GrpcConnection(String host, int port, String trustFile, String clientCertFile, String clientKeyFile, String keyPassword) throws SSLException {
@@ -71,9 +50,11 @@ public final class GrpcConnection {
 
     public GrpcConnection(ManagedChannel channel) {
         this.channel = channel;
+        this.pool = null;
     }
 
     public final ManagedChannel getChannel() throws Exception {
+        if (pool != null) return pool.getChannel();
         if (channel == null) {
             throw new Exception("GrpcConnection has not been initialised. Call GrpcConnection() with defaults or GrpcConnection(String host, int port, String trustFile, String clientCertFile, String clientKeyFile, String keyPassword)");
         }
@@ -81,9 +62,19 @@ public final class GrpcConnection {
     }
 
     public final void closeChannel() {
+        if (pool != null) {
+            pool.shutdown();
+            return;
+        }
         if (channel == null || channel.isShutdown()) {
             return;
         }
         channel.shutdown();
+        try {
+            if (!channel.awaitTermination(5, TimeUnit.SECONDS)) channel.shutdownNow();
+        } catch (InterruptedException e) {
+            channel.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

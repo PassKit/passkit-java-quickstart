@@ -44,10 +44,12 @@ public class QuickstartCoupons {
                         imagesStub = ImagesGrpc.newBlockingStub(conn.getChannel());
                         templatesStub = TemplatesGrpc.newBlockingStub(conn.getChannel());
                         couponsStub = SingleUseCouponsGrpc.newBlockingStub(conn.getChannel());
+                        AppConfig config = AppConfig.load();
+                        baseEmail = config.baseEmail();
+                        vipEmail = config.vipEmail();
                 } catch (Exception e) {
-                        e.printStackTrace();
-                        conn.closeChannel();
-                        System.exit(1);
+                        if (conn != null) conn.closeChannel();
+                        throw new IllegalStateException("Could not initialise the coupons quickstart", e);
                 }
         }
 
@@ -61,6 +63,8 @@ public class QuickstartCoupons {
         private static ImagesGrpc.ImagesBlockingStub imagesStub;
         private static SingleUseCouponsGrpc.SingleUseCouponsBlockingStub couponsStub;
         private static TemplatesGrpc.TemplatesBlockingStub templatesStub;
+        private static String baseEmail;
+        private static String vipEmail;
 
         /*
          * Quickstart will walk through the following steps:
@@ -89,8 +93,6 @@ public class QuickstartCoupons {
         public static CommonObjects.Id vipOfferId;
         public static CommonObjects.Id baseCouponId;
         public static CommonObjects.Id vipCouponId;
-        public static String baseEmail = "loyal.larry@dummy.passkit.com"; // Change to your email to receive cards
-        public static String vipEmail = "harry.highroller@dummy.passkit.com"; // Change to your email to receive cards
 
         public void quickStart() {
                 createImages();
@@ -99,7 +101,7 @@ public class QuickstartCoupons {
                 createOffer();
                 createCoupon();
                 redeemBaseCoupon(); // Optional
-                // redeemVIPCoupon();  // Optional
+                // redeemVIPCoupon(); // Optional
                 listCoupons(); // Optional
         }
 
@@ -219,8 +221,6 @@ public class QuickstartCoupons {
                                 .setSku("123456789")
                                 .setPerson(Personal.Person.newBuilder()
                                                 .setDisplayName("Loyal Larry")
-                                                // set to an email address that can receive mail to receive an enrolment
-                                                // email.
                                                 .setEmailAddress(baseEmail)
                                                 .build())
                                 .setStatus(CouponStatus.UNREDEEMED)
@@ -230,8 +230,6 @@ public class QuickstartCoupons {
                                 .setOfferId(vipOfferId.getId())
                                 .setPerson(Personal.Person.newBuilder()
                                                 .setDisplayName("Harry Highroller")
-                                                // set to an email address that can receive mail to receive an enrolment
-                                                // email.
                                                 .setEmailAddress(vipEmail)
                                                 .build())
                                 .build();
@@ -282,6 +280,10 @@ public class QuickstartCoupons {
 
                 // Shutdown if you are using the connection pool
                 // shutdownPool();
+        }
+
+        public static void close() {
+                if (conn != null) conn.closeChannel();
         }
 
         // Method to shut down the pool

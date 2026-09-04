@@ -43,9 +43,8 @@ public class QuickstartEventTickets {
                         templatesStub = TemplatesGrpc.newBlockingStub(conn.getChannel());
                         eventsStub = EventTicketsGrpc.newBlockingStub(conn.getChannel());
                 } catch (Exception e) {
-                        e.printStackTrace();
-                        conn.closeChannel();
-                        System.exit(1);
+                        if (conn != null) conn.closeChannel();
+                        throw new IllegalStateException("Could not initialise the event tickets quickstart", e);
                 }
         }
 
@@ -489,6 +488,10 @@ public class QuickstartEventTickets {
 
                 // Shutdown if you are using the connection pool
                 // shutdownPool();
+        }
+
+        public static void close() {
+                if (conn != null) conn.closeChannel();
         }
 
         // Method to shut down the pool

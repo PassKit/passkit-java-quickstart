@@ -1,8 +1,8 @@
 package com.passkit.quickstart;
 
 import org.junit.Test;
+import org.junit.Assume;
 
-import java.util.Properties;
 
 import static org.junit.Assert.*;
 
@@ -10,6 +10,8 @@ public class QuickstartCouponsTest {
 
         @Test
         public void quickstartCouponsTest() {
+                Assume.assumeTrue("Set PASSKIT_RUN_LIVE_TESTS=true to run API tests",
+                                "true".equalsIgnoreCase(System.getenv("PASSKIT_RUN_LIVE_TESTS")));
                 // Include pool size if using connection pooling e.g. 5
                 QuickstartCoupons qs = new QuickstartCoupons();
                 qs.quickStart();
@@ -62,10 +64,8 @@ public class QuickstartCouponsTest {
                                 "VIP Coupon URL: " + "https://pub1.pskt.io/" + QuickstartCoupons.vipCouponId.getId());
 
                 try {
-                        Properties properties = new Properties();
-                        properties.load(GrpcConnection.class.getResourceAsStream("/passkit.properties"));
-                        String pref = properties.getProperty("delete.assets.timeout.seconds", "0");
-                        int timeout = Integer.parseInt(pref);
+                        int timeout = AppConfig.load().cleanupDelaySeconds();
+                        String pref = Integer.toString(timeout);
                         if (timeout == -1) {
                                 System.exit(0);
                         }

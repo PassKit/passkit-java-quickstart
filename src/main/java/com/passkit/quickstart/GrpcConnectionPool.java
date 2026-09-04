@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GrpcConnectionPool {
@@ -28,21 +28,23 @@ public class GrpcConnectionPool {
     }
 
     public GrpcConnectionPool(int poolSize) throws IOException {
-        this.poolSize = poolSize;
-        Properties properties = new Properties();
-        properties.load(GrpcConnection.class.getResourceAsStream("/passkit.properties"));
+        this(AppConfig.load(), poolSize);
+    }
 
-        String host = properties.getProperty("grpc.host", "grpc.pub1.passkit.io");
-        int port = Integer.parseInt(properties.getProperty("grpc.port", "443"));
+    public GrpcConnectionPool(AppConfig config) throws IOException {
+        this(config, config.poolSize());
+    }
+
+    private GrpcConnectionPool(AppConfig config, int poolSize) throws IOException {
+        if (poolSize < 1) throw new IllegalArgumentException("poolSize must be at least 1");
+        this.poolSize = poolSize;
+        String host = config.host();
+        int port = config.port();
 
         for (int i = 0; i < poolSize; i++) {
             try {
                 SslContext ctx = buildSslContext(host, port,
-                        properties.getProperty("credentials.chain", "src/main/resources/credentials/ca-chain.pem"),
-                        properties.getProperty("credentials.certificate",
-                                "src/main/resources/credentials/certificate.pem"),
-                        properties.getProperty("credentials.key", "src/main/resources/credentials/key-java.pem"),
-                        properties.getProperty("credentials.password", "password").replaceAll("^['\"]|['\"]$", ""));
+                        config.caChain(), config.certificate(), config.key(), config.keyPassword());
 
                 ManagedChannel channel = NettyChannelBuilder.forAddress(host, port)
                         .sslContext(ctx)
@@ -65,6 +67,12 @@ public class GrpcConnectionPool {
     public void shutdown() {
         for (ManagedChannel channel : channelPool) {
             channel.shutdown();
+            try {
+                if (!channel.awaitTermination(5, TimeUnit.SECONDS)) channel.shutdownNow();
+            } catch (InterruptedException e) {
+                channel.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }

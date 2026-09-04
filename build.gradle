@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group = 'com.passkit.grpc'
@@ -9,7 +10,7 @@ repositories {
     mavenCentral()
 }
 
-def passkitSdkVersion = '1.1.123'
+def passkitSdkVersion = '1.1.160'
 // Be careful to match grpc versions with netty.
 // See https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty
 def grpcVersion = '1.72.0'
@@ -32,5 +33,9 @@ dependencies {
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     implementation "io.grpc:grpc-testing:${grpcVersion}"
     runtimeOnly "io.netty:netty-tcnative-boringssl-static:${nettyTcNativeVersion}"
-    testCompileOnly group: 'junit', name: 'junit', version: '4.13.1'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+application {
+    mainClass = 'com.passkit.quickstart.Main'
 }
