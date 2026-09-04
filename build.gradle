@@ -13,7 +13,7 @@ repositories {
 def passkitSdkVersion = '1.1.160'
 // Be careful to match grpc versions with netty.
 // See https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty
-def grpcVersion = '1.72.0'
+def grpcVersion = '1.83.1'
 def nettyTcNativeVersion = '2.0.70.Final'
 
 test {
